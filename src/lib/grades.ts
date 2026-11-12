@@ -1,0 +1,63 @@
+import { assignedThrough, doneCount } from './program';
+import type { Attempt, GradeOverride, Settings } from '../data/types';
+import type { Track } from '../content/types';
+
+export interface TypingGrade {
+  /** Average accuracy of the last 3 clean runs, or null if there are none. */
+  accuracyAvg: number | null;
+  /** Best clean WPM, or null if there are no clean runs. */
+  bestWpm: number | null;
+  completion: { done: number; total: number };
+  /** Each part is scored 0 to 100. */
+  accuracyScore: number;
+  speedScore: number;
+  completionScore: number;
+  /** Weighted total 0 to 100, or null when the student has no runs yet. */
+  computed: number | null;
+  /** What is shown: the override if there is one, otherwise the computed grade. */
+  total: number | null;
+  override?: GradeOverride;
+}
+
+const clamp = (n: number) => Math.max(0, Math.min(100, n));
+
+export function computeTypingGrade(args: {
+  attempts: Attempt[];
+  track: Track;
+  /** The student's current program day. */
+  day: number;
+  settings: Pick<Settings, 'targets' | 'weights'>;
+  override?: GradeOverride;
+}): TypingGrade {
+  const { attempts, track, day, settings, override } = args;
+  const target = settings.targets[track];
+  const w = settings.weights;
+
+  const clean = attempts.filter((a) => a.clean).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const last3 = clean.slice(-3);
+  const accuracyAvg = last3.length ? last3.reduce((s, a) => s + a.accuracy, 0) / last3.length : null;
+  const bestWpm = clean.length ? Math.max(...clean.map((a) => a.wpm)) : null;
+
+  const assigned = assignedThrough(track, Math.max(day, 1));
+  const doneActs = assigned.filter((a) => doneCount(attempts, a.day, a.act, a.passages) >= a.passages.length).length;
+
+  const accuracyScore = accuracyAvg == null ? 0 : clamp((accuracyAvg / target.accuracy) * 100);
+  const speedScore = bestWpm == null ? 0 : clamp((bestWpm / target.wpm) * 100);
+  const completionScore = assigned.length ? clamp((doneActs / assigned.length) * 100) : 0;
+
+  const wsum = w.accuracy + w.speed + w.completion || 1;
+  const weighted = (w.accuracy * accuracyScore + w.speed * speedScore + w.completion * completionScore) / wsum;
+  const computed = attempts.length ? Math.round(weighted) : null;
+
+  return {
+    accuracyAvg: accuracyAvg == null ? null : Math.round(accuracyAvg * 10) / 10,
+    bestWpm,
+    completion: { done: doneActs, total: assigned.length },
+    accuracyScore: Math.round(accuracyScore),
+    speedScore: Math.round(speedScore),
+    completionScore: Math.round(completionScore),
+    computed,
+    total: override ? override.value : computed,
+    override,
+  };
+}
