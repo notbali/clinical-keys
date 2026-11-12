@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clinical Keys: Typing Practice for MA &amp; Pharmacy Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-track="ma">
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="mark">Rx</div>Clinical Keys</div>
+    <div class="name"><label for="name">Your name</label><input id="name" placeholder="First and last" autocomplete="off"></div>
+  </header>
+
+  <main id="home">
+    <h1>Typing practice that sounds like the job.</h1>
+    <p class="lede">Every drill here is something you'll actually type at work: vitals, SOAP notes, phone messages, prescription labels, sig codes. Pick your track and start a drill.</p>
+    <div class="controls">
+      <div class="seg" id="trackseg" role="tablist" aria-label="Track">
+        <button data-track="ma">Medical Assistant</button>
+        <button data-track="rx">Pharmacy Tech</button>
+      </div>
+      <div class="seg" id="viewseg" role="tablist" aria-label="View">
+        <button data-view="program">10-day program</button>
+        <button data-view="drills">All drills</button>
+      </div>
+    </div>
+    <div class="days" id="program"></div>
+    <div class="grid" id="grid"></div>
+    <div class="how">
+      <div><b>Speed (WPM)</b>Only correctly typed characters count toward your words per minute.</div>
+      <div><b>Accuracy</b>Every keystroke counts, including ones you fix. Aim for 98% or higher.</div>
+      <div><b>Personal bests</b>Saved on this device only when you finish with zero errors left and 95%+ accuracy.</div>
+    </div>
+  </main>
+
+  <section id="practice" hidden>
+    <div class="pbar">
+      <button class="back" id="back">&larr; All drills</button>
+      <div class="ptitle" id="p-title"></div>
+      <div class="pcount" id="p-count"></div>
+    </div>
+    <div class="scenario">
+      <div class="ctx" id="p-ctx"></div>
+      <div class="note" id="p-note"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span>WPM</span><b id="s-wpm">0</b></div>
+      <div class="stat"><span>Accuracy</span><b id="s-acc">100%</b></div>
+      <div class="stat"><span id="s-time-l">Time</span><b id="s-time">0:00</b></div>
+      <div class="stat"><span>Mistakes</span><b id="s-err">0</b></div>
+    </div>
+    <div class="bar"><div id="progress"></div></div>
+    <div class="typebox" id="typebox">
+      <div id="text" aria-live="off"></div>
+      <textarea id="ta" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Type the passage here"></textarea>
+      <div class="overlay" id="overlay">Click here and start typing</div>
+    </div>
+    <div class="tools">
+      <button class="btn" id="restart">Restart</button>
+      <span id="hint-tools">
+        <button class="btn" id="peek">Peek (3 sec)</button>
+        <button class="btn" id="reveal">Show answer</button>
+      </span>
+      <span class="flash" id="flash"></span>
+      <span class="hint">Enter = new line (&crarr;) &middot; Esc restarts &middot; Pasting is off</span>
+    </div>
+
+    <div class="result" id="result" hidden>
+      <h2 id="r-title"></h2>
+      <p id="r-msg"></p>
+      <div class="rstats">
+        <div><span>WPM</span><b id="r-wpm"></b></div>
+        <div><span>Accuracy</span><b id="r-acc"></b></div>
+        <div><span>Time</span><b id="r-time"></b></div>
+        <div><span>Errors left</span><b id="r-unc"></b></div>
+      </div>
+      <div class="tools">
+        <button class="btn primary" id="next">Next passage &rarr;</button>
+        <button class="btn" id="again">Try again</button>
+        <button class="btn" id="copy">Copy my result</button>
+        <span class="hint" id="copy-msg"></span>
+      </div>
+      <input class="copyfall" id="copyfall" readonly hidden>
+    </div>
+
+    <div class="why" id="p-why"></div>
+    <div class="glossary" id="glossary" hidden>
+      <h4>Sig code cheat sheet</h4>
+      <div class="gl" id="gl"></div>
+      <p class="gnote">OD, OS, OU, AD, AS and AU are on ISMP's list of error-prone abbreviations, and many pharmacies require them spelled out. You still need to be able to read them.</p>
+    </div>
+  </section>
+
+  <footer>All patients, prescriptions, providers, and Rx numbers are fictional. For typing practice only, not clinical guidance.</footer>
+</div>
+
+<script src="js/content/glossary.js"></script>
+<script src="js/content/ma.js"></script>
+<script src="js/content/rx.js"></script>
+<script src="js/content/sprint.js"></script>
+<script src="js/content/program.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

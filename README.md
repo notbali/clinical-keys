@@ -1,25 +1,40 @@
 # Clinical Keys
 
-Typing practice for Medical Assistant and Pharmacy Tech students, built from real job tasks: vitals, SOAP notes, phone messages, sig codes, prescription labels, and look-alike drug names.
+Typing practice for a 2-week Medical Assistant and Pharmacy Tech course. Students type realistic job tasks
+(charting, sig codes, labels, phone messages) instead of random sentences. Instructors enroll students into
+classes, see everyone by program day, and export typing grades for Blackboard.
+
+All patients, prescribers, students and Rx numbers in this repo are **fictional**.
 
 ## Run it
-Double-click `index.html` to open it in a browser. There's nothing to install.
 
-To share it with students, host the folder on any static host (GitHub Pages, Netlify, or a school web server) and hand out the link.
-
-## Add or edit drills
-Drills live in `js/content/ma.js` (Medical Assistant) and `js/content/rx.js` (Pharmacy Tech). Each drill has a list of passages:
-
-```js
-{ ctx: "What the student sees above the text (HTML allowed)",
-  text: "Exactly what the student types. Use \n for a new line." }
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm test           # unit tests
+npm run build      # typecheck and production build
 ```
 
-Set `mode: "hidden"` on a drill to hide the text and reveal letters as students type them correctly, as the Sig Code Translator does.
+With no back end configured the app runs in **demo mode**: a fictional roster, with everything stored in the browser.
 
-## Scoring
-- **WPM** counts only correctly typed characters.
-- **Accuracy** counts every keystroke, including corrected ones.
-- **Personal bests** are saved in the browser only when a run finishes with zero errors left and 95%+ accuracy.
+- Student: sign in as `santosmaya` (Maya Santos, Day 4). Other demo usernames: `johnsonmarcus`, `brooksimani`, `ramanpriya`,
+  `fischerjordan`, `parkdaniel`, `vasquezelena`, `reedtyler`.
+- Instructor: `/instructor/signin`, any email and password.
 
-All patients, prescriptions, and providers are fictional. For typing practice only, not clinical guidance.
+## Layout
+
+- `src/lib/` pure, tested logic: school days, program day, usernames, roster paste, grades, CSV
+- `src/typing/` the typing scorer and the player component
+- `src/content/` drills, sig glossary, sprint lines, and the 10-day program (data only)
+- `src/data/` the `Api` interface, the demo adapter and its seed data
+- `src/pages/` student and instructor screens
+- `src/styles/` theme and app styles
+- `supabase/` database schema, security checks and the student sign-in Edge Function
+- `docs/` design decisions and the back end plan
+- `prototype/` the original single-file typing trainer
+
+## Status
+
+Phase 1 works on the demo adapter and on a local Supabase stack (see `docs/BACKEND.md` for how to run and test it).
+Not done: deploying to a hosted Supabase project, achievements, the day 1/5/10 tests, dictation, shift simulation, error hunt and
+forms, and the Blackboard launch and grade return.

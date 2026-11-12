@@ -13,4 +13,6 @@ build/
 coverage/
 .vercel/
 .netlify/
+supabase/.temp/
+supabase/.branches/
 *.log

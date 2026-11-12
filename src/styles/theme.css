@@ -1,0 +1,118 @@
+/* Clinical Keys theme.
+   One file holds every color, font and base behavior the screens use. Change a value here and every screen follows.
+   Tracks: Medical Assistant (MA) is deep blue-teal, Pharmacy Tech (PT) is plum. Add data-track="rx" to <body> for PT.
+   Status colors are always paired with a word or icon, never used alone. */
+
+:root {
+  color-scheme: light;
+
+  /* Type */
+  --font-ui: 'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  /* Neutrals: cool gray ground, white surfaces */
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --line: #d9dee6;
+  --line-soft: #e6eaf0;
+  --line-strong: #b9c1cd;
+  --ink: #14202b;
+  --ink-2: #33414f;
+  --muted: #4a5666;
+
+  /* Instructor chrome: deep navy */
+  --chrome: #0f2237;
+  --chrome-2: #1d3550;
+  --chrome-3: #183049;
+  --chrome-line: #3b5575;
+  --on-chrome: #d4deea;
+  --on-chrome-muted: #9fb0c4;
+
+  /* Track accents */
+  --ma: #0a6a85;
+  --ma-ink: #07506a;
+  --ma-soft: #e1f1f6;
+  --ma-tint: #eef7fa;
+  --pt: #7b3f86;
+  --pt-ink: #5c2c66;
+  --pt-soft: #f3e6f5;
+  --pt-tint: #f8f0f9;
+
+  /* Active accent follows the track */
+  --accent: var(--ma);
+  --accent-ink: var(--ma-ink);
+  --accent-soft: var(--ma-soft);
+  --accent-tint: var(--ma-tint);
+
+  /* Status */
+  --good: #1e7a46;
+  --good-ink: #17603a;
+  --good-soft: #e3f4e9;
+  --good-tint: #f3faf5;
+  --good-line: #c6e4d0;
+  --warn: #8a5a00;
+  --warn-ink: #5f3d00;
+  --warn-soft: #fdf0d3;
+  --warn-tint: #fff8e8;
+  --warn-line: #ecd9a8;
+  --bad: #b3261e;
+  --bad-ink: #8a1c15;
+  --bad-soft: #fbe4e1;
+  --bad-tint: #fdf1ef;
+  --bad-line: #efbab4;
+
+  /* Links, info, focus */
+  --link: #1a56a0;
+  --info-ink: #12407a;
+  --info-soft: #e4edf9;
+  --focus: #1a56a0;
+}
+
+body[data-track="rx"] {
+  --accent: var(--pt);
+  --accent-ink: var(--pt-ink);
+  --accent-soft: var(--pt-soft);
+  --accent-tint: var(--pt-tint);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+table, input, .num { font-variant-numeric: tabular-nums; }
+
+a { color: var(--link); }
+a:hover { color: var(--info-ink); }
+
+/* Interactive feedback: hover and press are more prominent than rest */
+a[href], button {
+  touch-action: manipulation;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, filter 0.12s ease;
+}
+a[href]:hover, button:hover { filter: brightness(0.94); }
+a[href]:active, button:active { filter: brightness(0.86); }
+
+/* Visible keyboard focus everywhere; no focus ring on mouse click */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+input, textarea, select { font-family: inherit; }
+::selection { background: var(--accent-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
