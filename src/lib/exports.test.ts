@@ -11,7 +11,7 @@ const lines = (csv: string) => csv.trimEnd().split('\r\n');
 describe('gradesCsv', () => {
   it('has the columns an instructor needs to line up with the Blackboard gradebook', () => {
     expect(lines(gradesCsv([]))[0]).toBe(
-      'Last Name,First Name,Username,Blackboard Username,Track,Program Day,Typing Grade,Overridden,Accuracy (last 3 clean runs),Best Clean WPM,Activities Done,Activities Assigned,Last Active',
+      'Last Name,First Name,Username,Blackboard Username,Track,Program Day,Typing Grade,Overridden,Accuracy (last 3 finished runs),Best WPM,Activities Done,Activities Assigned,Last Active',
     );
   });
   it('uses CRLF line endings and ends with a newline', () => {

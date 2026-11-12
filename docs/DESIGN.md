@@ -12,8 +12,10 @@ Decisions that shape the code:
 - **Attendance is not tracked here.** The school's clock-in system is the official record.
 
 ## Typing grade
-Accuracy 40% (average of the last 3 clean runs against the target), speed 30% (best clean WPM against the target),
-activities completed 30%. Weights and targets are instructor settings. An override needs a written reason and is logged.
+Accuracy 40% (average of the last 3 finished runs against the target), speed 30% (best WPM among finished runs against the target),
+activities completed 30%. A run is *finished* when no errors are left and the answer was not shown; it counts toward the
+grade even if accuracy was under 95%, so a student who is still learning is not graded as 0. Only *clean* runs (finished, 95% or
+better) count as personal bests. Weights and targets are instructor settings. An override needs a written reason and is logged.
 See `src/lib/grades.ts` and its tests.
 
 ## Theme

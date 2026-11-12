@@ -44,8 +44,9 @@ describe('demo seed', () => {
     const jordanRuns = seed.attempts.filter((a) => a.studentId === byName('Jordan').id);
     expect(jordanRuns.length).toBeGreaterThan(0);
     expect(jordanRuns.every((a) => a.completed && !a.clean)).toBe(true);
-    // Documents current behavior: with no clean run there is no accuracy average, so the accuracy part scores 0.
-    expect(grade('Jordan').accuracyAvg).toBeNull();
-    expect(grade('Jordan').accuracyScore).toBe(0);
+    // Finished-but-not-clean runs still count toward the grade, so the accuracy part is partial credit, not 0.
+    expect(grade('Jordan').accuracyAvg).toBeGreaterThan(80);
+    expect(grade('Jordan').accuracyAvg).toBeLessThan(95);
+    expect(grade('Jordan').accuracyScore).toBeGreaterThan(80);
   });
 });

@@ -116,10 +116,10 @@ export function Today() {
             <div className="stack">
               <div><div className="row row-between" style={{ fontSize: 14 }}><b>Accuracy</b><span className="num">{grade.accuracyAvg != null ? `${grade.accuracyAvg}%` : '—'} / {target.accuracy}%</span></div>
                 <ProgressBar value={grade.accuracyScore} tone="good" label="Accuracy toward target" />
-                <div className="hint">{grade.accuracyAvg == null ? 'Finish a clean run to see this.' : grade.accuracyScore >= 100 ? 'Target met. Hold it while you speed up.' : `${(target.accuracy - grade.accuracyAvg).toFixed(1)} points to go.`}</div></div>
+                <div className="hint">{grade.accuracyAvg == null ? 'Finish a run to see this.' : grade.accuracyScore >= 100 ? 'Target met. Hold it while you speed up.' : `${(target.accuracy - grade.accuracyAvg).toFixed(1)} points to go.`}</div></div>
               <div><div className="row row-between" style={{ fontSize: 14 }}><b>Speed</b><span className="num">{grade.bestWpm ?? '—'} WPM / {target.wpm} WPM</span></div>
                 <ProgressBar value={grade.speedScore} label="Speed toward target" />
-                <div className="hint">{grade.bestWpm == null ? 'Finish a clean run to see this.' : grade.speedScore >= 100 ? 'Target met.' : `${target.wpm - grade.bestWpm} WPM to go.`}</div></div>
+                <div className="hint">{grade.bestWpm == null ? 'Finish a run to see this.' : grade.speedScore >= 100 ? 'Target met.' : `${target.wpm - grade.bestWpm} WPM to go.`}</div></div>
             </div>
           </Card>
           <Card title="Personal bests">

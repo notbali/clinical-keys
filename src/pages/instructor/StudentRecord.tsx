@@ -85,7 +85,7 @@ export function StudentRecordPage() {
             <div className="table"><div className="table-in" style={{ minWidth: 560 }}>
               <div className="tr head cols-grades"><div>Part</div><div>Weight</div><div>Score</div><div>How</div><div>Status</div></div>
               {[
-                ['Accuracy', w.accuracy, grade.accuracyScore, `Last 3 clean runs average ${grade.accuracyAvg ?? '—'}%, target ${target.accuracy}%`],
+                ['Accuracy', w.accuracy, grade.accuracyScore, `Last 3 finished runs average ${grade.accuracyAvg ?? '—'}%, target ${target.accuracy}%`],
                 ['Speed', w.speed, grade.speedScore, `${grade.bestWpm ?? '—'} WPM against a ${target.wpm} WPM target`],
                 ['Activities completed', w.completion, grade.completionScore, `${grade.completion.done} of ${grade.completion.total} assigned through today`],
               ].map(([n, wt, sc, how]) => (
