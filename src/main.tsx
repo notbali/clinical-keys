@@ -5,6 +5,7 @@ import { Providers } from './data/context';
 import { App } from './App';
 import './styles/theme.css';
 import './styles/app.css';
+import './styles/ehr.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

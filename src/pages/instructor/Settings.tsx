@@ -55,6 +55,16 @@ export function Settings() {
               {draft.closedDays.map((d) => <span className="chip" key={d} style={{ padding: '4px 4px 4px 10px' }}>{fmtDate(d, { weekday: 'short', month: 'short', day: 'numeric' })}<button className="btn btn-ghost btn-sm" aria-label={`Remove ${d}`} onClick={() => setDraft({ ...draft, closedDays: draft.closedDays.filter((x) => x !== d) })}>✕</button></span>)}
             </div>
           </Card>
+          <Card title="Student look" subtitle="How the student screens look. The typing works the same either way.">
+            <Field label="Look" hint="The EHR look has a chart-style header and menu, a patient banner, and a note window around the typing area, so new students get used to health record software.">
+              {({ id }) => (
+                <select id={id} name="ui-style" className="select" value={draft.uiStyle ?? 'ehr'} onChange={(e) => setDraft({ ...draft, uiStyle: e.target.value === 'standard' ? 'standard' : 'ehr' })}>
+                  <option value="ehr">EHR training look</option>
+                  <option value="standard">Standard look</option>
+                </select>
+              )}
+            </Field>
+          </Card>
           <Card title="Blackboard link" subtitle="Students see an Open Blackboard button that goes here.">
             <Field label="Blackboard course URL">{({ id }) => <input id={id} name="bb" type="url" inputMode="url" spellCheck={false} autoComplete="off" className="input" value={draft.blackboardUrl ?? ''} onChange={(e) => setDraft({ ...draft, blackboardUrl: e.target.value.trim() || undefined })} placeholder="https://…" />}</Field>
           </Card>

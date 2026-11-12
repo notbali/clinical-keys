@@ -26,6 +26,8 @@ export interface StudentCtx {
   settings: Settings;
   override?: GradeOverride;
   today: ISODate;
+  /** True when the student screens use the training EHR look. */
+  ehr: boolean;
   /** Raw program day, 0 if the start date is in the future. */
   day: number;
   reload: () => void;
@@ -41,14 +43,46 @@ export function StudentLayout() {
   }, [api]);
 
   const track = loaded.data?.me.track ?? 'ma';
-  useEffect(() => { document.body.dataset.track = track; return () => { delete document.body.dataset.track; }; }, [track]);
+  const ehr = settings.uiStyle !== 'standard';
+  useEffect(() => {
+    document.body.dataset.track = track;
+    document.body.dataset.style = ehr ? 'ehr' : 'standard';
+    return () => { delete document.body.dataset.track; delete document.body.dataset.style; };
+  }, [track, ehr]);
 
   if (loaded.error) return <div className="page"><ErrorNote>{loaded.error}</ErrorNote></div>;
   if (!loaded.data) return <p className="empty" style={{ padding: 24 }}>Loading…</p>;
   const { me, attempts, override } = loaded.data;
   const today = todayISO();
   const day = me.enrollment ? programDay(me.enrollment.startDate, today, new Set(settings.closedDays)) : 1;
-  const ctx: StudentCtx = { me, attempts, settings, override, today, day, reload: loaded.reload };
+  const ctx: StudentCtx = { me, attempts, settings, override, today, ehr, day, reload: loaded.reload };
+
+  if (ehr) {
+    const stamp = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
+    return (
+      <>
+        <a className="skip" href="#main">Skip to content</a>
+        <DemoBanner />
+        <header className="ehr-bar">
+          <Link to="/today" className="ehr-brand"><span className="mark" aria-hidden="true">Rx</span>Clinical Keys<span className="ehr-env">TRAINING</span></Link>
+          <div className="ehr-bar-mid">{stamp}</div>
+          <div className="ehr-user">
+            <span translate="no">{me.lastName.toUpperCase()}, {me.firstName} · <span className="mono">{me.username}</span></span>
+            <button className="btn btn-sm" onClick={() => void signOut()}>Sign out</button>
+          </div>
+        </header>
+        <div className="ehr-body">
+          <nav className="ehr-nav" aria-label="Main">
+            <div className="ehr-nav-h">Activities</div>
+            <NavLink to="/today" className={({ isActive }) => (isActive ? 'on' : '')}>Worklist<small>Today’s activities</small></NavLink>
+            <NavLink to="/gradebook" className={({ isActive }) => (isActive ? 'on' : '')}>My results<small>Grades and progress</small></NavLink>
+            <NavLink to="/drills" className={({ isActive }) => (isActive ? 'on' : '')}>Practice library<small>All drills</small></NavLink>
+          </nav>
+          <main id="main" className="page ehr-main"><Outlet context={ctx} /></main>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
