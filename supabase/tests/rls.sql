@@ -111,6 +111,7 @@ begin
   perform pg_temp.check_('student cannot write notes', pg_temp.raises($q$insert into public.notes (student_id, author_id, body) values ('00000000-0000-0000-0000-0000000000d1','00000000-0000-0000-0000-0000000000a1','x')$q$));
   perform pg_temp.check_('student cannot write grade overrides', pg_temp.raises($q$insert into public.grade_overrides (student_id, value, reason, set_by) values ('00000000-0000-0000-0000-0000000000d1', 100, 'x', '00000000-0000-0000-0000-0000000000a1')$q$));
   perform pg_temp.check_('student cannot change their own track', pg_temp.affected($q$update public.students set track = 'rx'$q$) <= 0);
+  perform pg_temp.check_('student cannot touch login_attempts even by insert', pg_temp.raises($q$insert into public.login_attempts (client) values ('x')$q$));
   perform pg_temp.check_('student cannot create classes', pg_temp.raises($q$insert into public.classes (owner_id, name) values ('00000000-0000-0000-0000-0000000000a1','x')$q$));
   perform pg_temp.check_('student cannot call delete_class on a real class', pg_temp.raises($q$select public.delete_class('00000000-0000-0000-0000-0000000000c1')$q$));
   reset role;
@@ -139,6 +140,9 @@ begin
   perform pg_temp.check_('anonymous cannot read students', pg_temp.count_of('select 1 from public.students') <= 0);
   perform pg_temp.check_('anonymous cannot read attempts', pg_temp.count_of('select 1 from public.attempts') <= 0);
   perform pg_temp.check_('anonymous cannot insert attempts', pg_temp.raises($q$insert into public.attempts (student_id, kind, track, passage, wpm, accuracy, errors_left, seconds, completed, clean) values ('00000000-0000-0000-0000-0000000000d1','sprint','ma',0,1,1,0,1,true,false)$q$));
+  perform pg_temp.check_('anonymous cannot call delete_class', pg_temp.raises($q$select public.delete_class('00000000-0000-0000-0000-0000000000c1')$q$));
+  perform pg_temp.check_('anonymous cannot call the helper functions', pg_temp.raises('select public.my_student_id()') and pg_temp.raises('select public.is_instructor()'));
+  perform pg_temp.check_('anonymous cannot read settings or classes', pg_temp.count_of('select 1 from public.settings') <= 0 and pg_temp.count_of('select 1 from public.classes') <= 0);
   reset role;
 
   ---------------------------------------------------------------- delete_class (owner)
