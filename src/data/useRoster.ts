@@ -1,0 +1,18 @@
+import { useMemo } from 'react';
+import { useApi, useAsync, useSession } from './context';
+import { buildMetrics } from '../lib/metrics';
+
+/** Loads every student with their runs and computes grades, days and flags for the instructor screens. */
+export function useRoster() {
+  const api = useApi();
+  const { settings } = useSession();
+  const loaded = useAsync(async () => {
+    const [students, attempts, overrides, classes] = await Promise.all([api.listStudents(), api.listAttempts(), api.listOverrides(), api.listClasses()]);
+    return { students, attempts, overrides, classes };
+  }, [api]);
+  const metrics = useMemo(
+    () => (loaded.data ? buildMetrics({ students: loaded.data.students, attempts: loaded.data.attempts, overrides: loaded.data.overrides, settings }) : []),
+    [loaded.data, settings],
+  );
+  return { ...loaded, metrics, classes: loaded.data?.classes ?? [], settings };
+}

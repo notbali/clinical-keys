@@ -62,6 +62,8 @@ export interface Settings {
   targets: Record<Track, { wpm: number; accuracy: number }>;
   weights: { accuracy: number; speed: number; completion: number };
   closedDays: ISODate[];
+  /** Optional link shown to students for their Blackboard course. */
+  blackboardUrl?: string;
 }
 
 export type Session =

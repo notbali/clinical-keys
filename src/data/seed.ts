@@ -2,7 +2,6 @@ import { addDays, dateOfProgramDay, isSchoolDay, programDay, todayISO, type ISOD
 import { assignedThrough } from '../lib/program';
 import type { Attempt, ClassGroup, Enrollment, Note, Student } from './types';
 import type { Track } from '../content/types';
-import { getDrill } from '../content';
 import { resolveActivity, programFor } from '../lib/program';
 
 /** Deterministic pseudo-random numbers so the demo looks the same every time. */
@@ -39,7 +38,7 @@ const PROFILES: Profile[] = [
   { first: 'Marcus', last: 'Johnson', track: 'rx', day: 9, group: 'Nov 2 group', wpm0: 33, wpm1: 41, acc0: 95, acc1: 98, completion: 1 },
   { first: 'Imani', last: 'Brooks', track: 'ma', day: 7, group: 'Nov 2 group', wpm0: 27, wpm1: 33, acc0: 93, acc1: 96, completion: 0.9 },
   { first: 'Priya', last: 'Raman', track: 'ma', day: 6, group: 'Nov 2 group', wpm0: 26, wpm1: 31, acc0: 94, acc1: 97, completion: 1 },
-  { first: 'Maya', last: 'Santos', track: 'ma', day: 4, group: 'Nov 9 group', wpm0: 24, wpm1: 29, acc0: 93, acc1: 97, completion: 0.85 },
+  { first: 'Maya', last: 'Santos', track: 'ma', day: 4, group: 'Nov 9 group', wpm0: 24, wpm1: 29, acc0: 93, acc1: 97, completion: 1 },
   { first: 'Jordan', last: 'Fischer', track: 'rx', day: 4, group: 'Nov 9 group', wpm0: 22, wpm1: 25, acc0: 87, acc1: 89, completion: 0.6 },
   { first: 'Daniel', last: 'Park', track: 'rx', day: 3, group: 'Nov 9 group', wpm0: 20, wpm1: 22, acc0: 90, acc1: 91, completion: 0.8 },
   { first: 'Elena', last: 'Vasquez', track: 'ma', day: 1, group: 'Nov 9 group', wpm0: 0, wpm1: 0, acc0: 0, acc1: 0, completion: 0 },
@@ -82,19 +81,24 @@ export function buildSeed(now: Date = new Date()): SeedData {
     const lerp = (a: number, b: number, d: number) => a + ((b - a) * (d - 1)) / Math.max(p.day - 1, 1);
     const acts = assignedThrough(p.track, p.day);
     const nowMs = now.getTime();
+    // Students with a completion rate under 1 left their most recent past activities unfinished.
+    const past = acts.filter((a) => a.day < p.day);
+    const skipCount = Math.round(past.length * (1 - p.completion));
+    const skip = new Set(past.slice(past.length - skipCount).map((a) => `${a.day}:${a.act}`));
 
     for (const act of acts) {
       const resolved = resolveActivity(programFor(p.track).find((d) => d.n === act.day)!.acts[act.act]);
       const isToday = act.day === programDay(startDate, today);
       // Past days follow the completion rate; today only the warm-up sprint is done.
       if (isToday && resolved.kind !== 'sprint') continue;
-      if (!isToday && rand() > p.completion) continue;
+      if (!isToday && skip.has(`${act.day}:${act.act}`)) continue;
       if (p.wpm1 === 0) continue;
       const date = dateOfProgramDay(startDate, act.day);
       act.passages.forEach((passage, k) => {
         const wpm = Math.round(lerp(p.wpm0, p.wpm1, act.day) + (rand() - 0.5) * 3);
         const accuracy = Math.round((lerp(p.acc0, p.acc1, act.day) + (rand() - 0.5) * 1.2) * 10) / 10;
-        const when = at(date, resolved.kind === 'sprint' ? 12 : 13, 40 + k * 3 + (act.act % 3));
+        // Today's run happened a little while ago; earlier days use afternoon times.
+        const when = isToday ? new Date(nowMs - (30 - k) * 60000).toISOString() : at(date, resolved.kind === 'sprint' ? 12 : 13, 40 + k * 3 + (act.act % 3));
         if (new Date(when).getTime() > nowMs) return;
         attempts.push({
           id: `att-${++aid}`, studentId: id, kind: resolved.kind === 'sprint' ? 'sprint' : 'drill', track: p.track,
@@ -104,7 +108,6 @@ export function buildSeed(now: Date = new Date()): SeedData {
         });
       });
     }
-    void getDrill;
   });
 
   const maya = students.find((s) => s.username === 'santosmaya')!;
