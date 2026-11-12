@@ -11,7 +11,7 @@ You do the account steps; keys stay in your own terminal and dashboards, never i
 2. **Link and apply the schema** (from the repo, signed in with `npx supabase login`):
    `npx supabase link --project-ref <ref>` then `npx supabase db push`.
 3. **Deploy the sign-in function:** `npx supabase functions deploy student-login`, then
-   `npx supabase secrets set ALLOWED_ORIGIN=https://your-site-address` (no trailing slash).
+   `npx supabase secrets set ALLOWED_ORIGIN=https://your-site-address`. A trailing slash or capital letters are tolerated, and you can list several sites separated by commas.
 4. **Turn off public sign-ups:** Dashboard > Authentication > Sign In / Providers > "Allow new users to sign up" off.
 5. **Create your instructor account:** Dashboard > Authentication > Users > Add user (auto-confirm), copy its id, then in the SQL Editor:
    `insert into public.instructors (id, name) values ('<that id>', 'Your Name');`
