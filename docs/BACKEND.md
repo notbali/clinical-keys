@@ -74,3 +74,6 @@ Reset the local database with `npx supabase db reset`. Never put hosted-project 
 ## Not in this schema or adapter yet
 Blackboard LTI 1.3 launch and grade return (Phase 2), school calendar beyond a list of closed days (kept in `settings.data`),
 co-instructor or substitute roles, and the retention job that purges archived records after 30 days.
+
+## Going hosted
+See `docs/DEPLOY.md` for the step-by-step.
