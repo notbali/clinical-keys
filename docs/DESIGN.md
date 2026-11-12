@@ -22,3 +22,10 @@ See `src/lib/grades.ts` and its tests.
 `src/styles/theme.css` is the single source of colors and fonts (cool gray ground, navy instructor chrome, a blue-teal
 accent for Medical Assistant and plum for Pharmacy Tech via `data-track="rx"` on `<body>`). Status colors always
 come with a word. `src/styles/app.css` holds component styles that use the theme variables.
+
+## EHR training look
+Students see a chart-style interface by default (a setting in Program and settings switches to the standard look): a dark title bar
+marked TRAINING, a left menu (Worklist, My results, Practice library), a patient banner above each passage that has a patient,
+and a "note window" around the typing area with a status (Unsigned draft, Signed, Not signed: errors remain; for pharmacy,
+Entry in progress, Ready for pharmacist check). The typing itself is unchanged. The look follows how health record software is
+laid out in general and does not copy any product. Styles are in `src/styles/ehr.css`, scoped to `body[data-style="ehr"]`.

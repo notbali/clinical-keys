@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Card, ErrorNote, mmss } from '../../components/ui';
+import { Button, Card, ErrorNote, Tag, mmss } from '../../components/ui';
 import { useStudent } from '../../components/Layouts';
 import { useApi } from '../../data/context';
 import { getDrill, GLOSSARY, SPRINT } from '../../content';
 import { programFor, resolveActivity } from '../../lib/program';
 import { TypingPlayer } from '../../typing/TypingPlayer';
+import { PatientBanner } from '../../components/PatientBanner';
+import { windowTitle } from '../../lib/ehrLabels';
 import type { RunResult } from '../../typing/engine';
 import type { NewAttempt } from '../../data/api';
 
@@ -24,7 +26,7 @@ function messageFor(r: RunResult, sprint: boolean, hidden: boolean): { title: st
 export function Practice() {
   const api = useApi();
   const nav = useNavigate();
-  const { me, attempts, reload } = useStudent();
+  const { me, attempts, reload, ehr } = useStudent();
   const [params] = useSearchParams();
   const kind = params.get('kind') === 'sprint' ? 'sprint' : 'drill';
   const drill = kind === 'drill' ? getDrill(params.get('drill') ?? '') : undefined;
@@ -80,8 +82,21 @@ export function Practice() {
   };
 
   const title = kind === 'sprint' ? 'Warm-up Sprint' : drill!.title;
+  const rx = me.track === 'rx';
   const msg = result ? messageFor(result, kind === 'sprint', drill?.mode === 'hidden') : null;
   const pos = list.indexOf(passage) + 1;
+
+  const scenario = (
+    <div className="scenario">
+      <div dangerouslySetInnerHTML={{ __html: kind === 'sprint' ? SPRINT.intro : drill!.items[passage].ctx }} />
+      <p className="muted" style={{ fontSize: 14, marginTop: 6 }}>
+        {kind === 'sprint' ? SPRINT.note : drill!.mode === 'hidden' ? 'Type the label directions in full. Letters appear as you get them right, and red means wrong. Use the cheat sheet below if you’re stuck.' : 'Type it exactly as shown. Capitals, numbers, spacing and punctuation all count.'}
+      </p>
+    </div>
+  );
+  const player = (
+    <TypingPlayer key={`${kind}-${drill?.id}-${passage}-${round}`} target={target} mode={drill?.mode ?? 'copy'} limit={kind === 'sprint' ? SPRINT.limit : undefined} onFinish={onFinish} onRestart={restart} />
+  );
 
   return (
     <>
@@ -90,14 +105,21 @@ export function Practice() {
         <span className="muted" style={{ fontSize: 14 }}>{kind === 'sprint' ? `${SPRINT.limit}-second sprint` : `Passage ${pos} of ${list.length}`}</span>
       </div>
 
-      <div className="scenario">
-        <div dangerouslySetInnerHTML={{ __html: kind === 'sprint' ? SPRINT.intro : drill!.items[passage].ctx }} />
-        <p className="muted" style={{ fontSize: 14, marginTop: 6 }}>
-          {kind === 'sprint' ? SPRINT.note : drill!.mode === 'hidden' ? 'Type the label directions in full. Letters appear as you get them right, and red means wrong. Use the cheat sheet below if you’re stuck.' : 'Type it exactly as shown. Capitals, numbers, spacing and punctuation all count.'}
-        </p>
-      </div>
+      {ehr && <PatientBanner patient={drill?.items[passage]?.patient} task={title} />}
 
-      <TypingPlayer key={`${kind}-${drill?.id}-${passage}-${round}`} target={target} mode={drill?.mode ?? 'copy'} limit={kind === 'sprint' ? SPRINT.limit : undefined} onFinish={onFinish} onRestart={restart} />
+      {ehr ? (
+        <div className="note-window">
+          <div className="note-title">
+            <b>{windowTitle(kind, drill?.id)}</b>
+            {kind === 'sprint'
+              ? <Tag tone={result ? 'good' : 'info'}>{result ? 'Finished' : 'Timed'}</Tag>
+              : <Tag tone={!result ? 'neutral' : result.completed ? 'good' : 'bad'}>{!result ? (rx ? 'Entry in progress' : 'Unsigned draft') : result.completed ? (rx ? 'Ready for pharmacist check' : 'Signed') : (rx ? 'Not ready: errors remain' : 'Not signed: errors remain')}</Tag>}
+            <span className="note-meta">Author: <span translate="no">{me.firstName} {me.lastName}</span> · {kind === 'sprint' ? `${SPRINT.limit}-second sprint` : `Passage ${pos} of ${list.length}`}</span>
+          </div>
+          <div className="note-body">{scenario}{player}</div>
+          <div className="note-foot"><span>{kind === 'sprint' ? 'The clock starts on your first keystroke.' : rx ? 'Enter it exactly as shown. An entry with errors cannot go to the pharmacist.' : 'Type the note exactly as shown. A note with errors cannot be signed.'}</span><span className="spacer" /><span>Training record, fictional patient</span></div>
+        </div>
+      ) : (<>{scenario}{player}</>)}
 
       {result && msg && (
         <Card className={`result ${msg.warn ? 'warn' : ''}`}>

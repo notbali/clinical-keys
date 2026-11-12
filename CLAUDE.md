@@ -19,6 +19,7 @@ Typing trainer for a 2-week Medical Assistant (MA) and Pharmacy Tech (PT) typing
 ## Content rules (important)
 - All patients, prescribers, Rx numbers, and phone numbers are **fictional**.
 - Medical and pharmacy content must be **accurate**: real sig conventions, correct Tall Man lettering (ISMP/FDA lists), Joint Commission do-not-use abbreviations, plausible vitals, doses within standard ranges. Double-check anything clinical before adding it.
+- Patients shown in the chart banner (`patient` on a passage in `src/content`) must be fictional and agree with the passage: same age and sex as the text, a date of birth that gives that age, the same person identical everywhere, and an allergy list that never includes a drug the passage gives them. `src/content/patients.test.ts` enforces this.
 - Never model do-not-use abbreviations (QD, QOD, U, IU, trailing zeros, missing leading zeros) as correct output.
 - MAs and techs don't give clinical advice: messages route to the provider/pharmacist.
 - Accuracy over speed is the core message. Personal bests only count for runs with zero uncorrected errors and ≥95% accuracy.

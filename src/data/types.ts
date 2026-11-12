@@ -64,6 +64,8 @@ export interface Settings {
   closedDays: ISODate[];
   /** Optional link shown to students for their Blackboard course. */
   blackboardUrl?: string;
+  /** How the student screens look: a training EHR (chart) style, or the standard look. */
+  uiStyle?: 'ehr' | 'standard';
 }
 
 export type Session =
@@ -74,4 +76,5 @@ export const DEFAULT_SETTINGS: Settings = {
   targets: { ma: { wpm: 35, accuracy: 95 }, rx: { wpm: 35, accuracy: 95 } },
   weights: { accuracy: 40, speed: 30, completion: 30 },
   closedDays: [],
+  uiStyle: 'ehr',
 };

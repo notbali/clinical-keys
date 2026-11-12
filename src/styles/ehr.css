@@ -1,0 +1,106 @@
+/* EHR training look. Applies when <body data-style="ehr">. It is modeled on how electronic health record software is laid
+   out in general (a dark title bar, a left chart menu, a patient banner, framed windows and dense tables), and does not copy
+   any one product. Everything here overrides the standard look in app.css and uses the theme variables. */
+
+body[data-style='ehr'] {
+  --bg: #e6ebf1;
+  --surface: #ffffff;
+  --line: #b7c2d0;
+  --line-soft: #dde4ec;
+  --line-strong: #8d9bad;
+  --ehr-bar: #17304f;
+  --ehr-bar-2: #22436b;
+  --ehr-title: #d9e2ee;
+  --ehr-select: #fff4c2;
+  font-size: 14px;
+}
+body[data-style='ehr'][data-track='rx'] { --ehr-bar: #3b1f4a; --ehr-bar-2: #54306a; }
+
+/* Frame: dark application bar, left menu, content */
+.ehr-bar { background: var(--ehr-bar); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 16px; height: 44px; position: sticky; top: 0; z-index: 5; border-bottom: 2px solid var(--ehr-bar-2); }
+.ehr-brand { display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font-weight: 700; }
+.ehr-brand .mark { width: 26px; height: 26px; border-radius: 3px; background: #fff; color: var(--ehr-bar); font-size: 12px; }
+.ehr-env { font-size: 10.5px; letter-spacing: 0.08em; font-weight: 700; background: #f2b83b; color: #3b2a00; padding: 1px 7px; border-radius: 2px; }
+.ehr-bar-mid { flex: 1; text-align: center; font-size: 13px; color: #c9d6e8; }
+.ehr-user { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.ehr-user .btn { background: transparent; color: #fff; border: 1px solid #7e93b0; padding: 3px 10px; font-size: 12.5px; }
+.ehr-body { display: flex; min-height: calc(100vh - 44px); }
+.ehr-nav { flex: 0 0 188px; background: #f3f6fa; border-right: 1px solid var(--line); padding: 10px 0; }
+.ehr-nav-h { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 6px 14px; }
+.ehr-nav a { display: block; text-decoration: none; color: var(--ink); padding: 8px 14px; border-left: 4px solid transparent; font-weight: 600; }
+.ehr-nav a small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+.ehr-nav a:hover { background: #e4ebf4; filter: none; }
+.ehr-nav a.on { background: var(--ehr-select); border-left-color: var(--accent); }
+.ehr-main { flex: 1; min-width: 0; max-width: none; margin: 0; padding: 14px 18px 48px; gap: 14px; }
+
+/* Patient banner */
+.pt-banner { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; background: #fff; border: 1px solid var(--line-strong); border-left: 6px solid var(--accent); border-radius: 2px; }
+.pt-banner > * { padding: 6px 14px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid var(--line-soft); }
+.pt-banner > *:last-child { border-right: 0; }
+.pt-name { font-size: 17px; font-weight: 800; letter-spacing: 0.01em; }
+.pt-item > span, .pt-allergy > span { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+.pt-item > b, .pt-allergy > b { font-size: 13.5px; font-weight: 700; }
+.pt-allergy.has { background: var(--bad-soft); }
+.pt-allergy.has > span, .pt-allergy.has > b { color: var(--bad-ink); }
+.pt-allergy.none > b { color: var(--good-ink); }
+.pt-banner-none { border-left-color: var(--line-strong); background: #f7f9fb; }
+
+/* Windows (cards) */
+body[data-style='ehr'] .card { border-radius: 2px; border-color: var(--line-strong); padding: 0; background: var(--surface); }
+body[data-style='ehr'] .card > :not(.card-head) { margin-left: 14px; margin-right: 14px; }
+body[data-style='ehr'] .card > :last-child { margin-bottom: 14px; }
+body[data-style='ehr'] .card-head { background: linear-gradient(#f4f7fb, var(--ehr-title)); border-bottom: 1px solid var(--line-strong); padding: 6px 12px; margin: 0 0 12px; }
+body[data-style='ehr'] .card-title { font-size: 13.5px; font-weight: 700; }
+body[data-style='ehr'] .card-sub { font-size: 12px; }
+body[data-style='ehr'] .stat { border-radius: 2px; border-color: var(--line-strong); padding: 8px 12px; }
+body[data-style='ehr'] .stat-value { font-size: 24px; }
+body[data-style='ehr'] .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Headings, buttons, tags, fields */
+body[data-style='ehr'] .page-title { font-size: 22px; font-weight: 700; letter-spacing: 0; }
+body[data-style='ehr'] .page-sub { font-size: 13.5px; }
+body[data-style='ehr'] .btn { border-radius: 2px; font-size: 13.5px; padding: 6px 14px; font-weight: 600; }
+body[data-style='ehr'] .btn-primary { background: linear-gradient(var(--accent), var(--accent-ink)); border-color: var(--accent-ink); }
+body[data-style='ehr'] .btn-secondary { background: linear-gradient(#fff, #e9eef4); border-color: var(--line-strong); padding: 5px 13px; }
+body[data-style='ehr'] .tag { border-radius: 2px; font-size: 11.5px; }
+body[data-style='ehr'] .input, body[data-style='ehr'] .select, body[data-style='ehr'] .textarea { border-radius: 2px; font-size: 14px; padding: 6px 9px; }
+body[data-style='ehr'] .note { border-radius: 2px; }
+body[data-style='ehr'] .bar { height: 6px; border-radius: 0; }
+body[data-style='ehr'] .bar-fill { border-radius: 0; }
+
+/* Program days as a timeline strip, activities as a worklist table */
+body[data-style='ehr'] .days { gap: 0; border: 1px solid var(--line-strong); background: #fff; }
+body[data-style='ehr'] .day { border: 0; border-right: 1px solid var(--line-soft); border-radius: 0; padding: 6px 10px; background: #fff; }
+body[data-style='ehr'] .day:last-child { border-right: 0; }
+body[data-style='ehr'] .day.done { background: var(--good-tint); color: var(--good-ink); }
+body[data-style='ehr'] .day.now { background: var(--ehr-bar); color: #fff; }
+body[data-style='ehr'] .act { border-radius: 0; padding: 8px 10px; gap: 6px 14px; }
+body[data-style='ehr'] .act:nth-child(even) { background: #f7f9fc; }
+body[data-style='ehr'] .act.now { background: var(--ehr-select); }
+body[data-style='ehr'] .act-dot { border-radius: 2px; width: 20px; height: 20px; flex-basis: 20px; }
+body[data-style='ehr'] .act-main b { font-size: 14px; }
+body[data-style='ehr'] .kv { padding: 5px 0; font-size: 13.5px; }
+
+/* Tables: zebra rows, small type */
+body[data-style='ehr'] .tr { padding: 6px 4px; font-size: 13px; }
+body[data-style='ehr'] .tr:nth-child(even):not(.head) { background: #f7f9fc; }
+body[data-style='ehr'] .tr.head { background: var(--ehr-title); color: var(--ink-2); border-top: 0; font-size: 11px; }
+
+/* The note window that holds the typing area */
+.note-window { border: 1px solid var(--line-strong); background: #fff; border-radius: 2px; }
+.note-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; background: linear-gradient(#f4f7fb, var(--ehr-title)); border-bottom: 1px solid var(--line-strong); padding: 6px 12px; }
+.note-title b { font-size: 14px; }
+.note-meta { font-size: 12px; color: var(--muted); }
+.note-body { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+.note-window .typebox { border-radius: 2px; border-color: var(--line-strong); background: #fffef9; }
+.note-window .typebox.focused { box-shadow: 0 0 0 2px var(--accent-soft); }
+.note-window .stat { border-radius: 2px; }
+.note-window .scenario { border-radius: 2px; border-left-width: 4px; background: #f7f9fc; }
+.note-foot { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 12px; background: #eef2f7; border-top: 1px solid var(--line-strong); font-size: 12.5px; color: var(--muted); align-items: center; }
+.note-foot .spacer { flex: 1; }
+
+@media (max-width: 760px) {
+  .ehr-nav { display: none; }
+  .ehr-bar-mid { display: none; }
+  .pt-banner > * { padding: 6px 10px; }
+}
