@@ -1,0 +1,42 @@
+# Clinical Keys — project context
+
+Typing trainer for a 2-week Medical Assistant (MA) and Pharmacy Tech (PT) typing course. Students currently use typing.com and find it to be busywork; the goal is engagement through **realistic job tasks** (charting, sig codes, labels, phone messages) instead of random sentences.
+
+## The classroom
+- Course is ~2 weeks (10 class days). Typing block is **~3 hours/day** inside a 6.5-hour day (~30 hours total).
+- The teacher wants students engaged, not slogging. Variety across the 3-hour block matters more than raw volume.
+- Students open a link in a browser, no logins. Many may use school Chromebooks.
+- **Open question for the teacher:** are MA and PT students in the same room at the same time, or separate classes? This decides whether the 10-day program shares warm-ups and class challenges or runs as two separate programs.
+
+## Tech constraints
+- Plain HTML/CSS/JS, **no build step, no frameworks**. Must work when `index.html` is opened directly from disk (so: classic `<script>` tags, not ES modules) and when hosted as a static page.
+- Content lives in `js/content/*.js` as data; `js/app.js` is the engine. Keep content and engine separate.
+- Progress is stored in `localStorage` (wrapped in try/catch), per device only. There is no backend yet.
+- No external network calls besides Google Fonts.
+
+## Content rules (important)
+- All patients, prescribers, Rx numbers, and phone numbers are **fictional**.
+- Medical and pharmacy content must be **accurate**: real sig conventions, correct Tall Man lettering (ISMP/FDA lists), Joint Commission do-not-use abbreviations, plausible vitals, doses within standard ranges. Double-check anything clinical before adding it.
+- Never model do-not-use abbreviations (QD, QOD, U, IU, trailing zeros, missing leading zeros) as correct output.
+- MAs and techs don't give clinical advice: messages route to the provider/pharmacist.
+- Accuracy over speed is the core message. Personal bests only count for runs with zero uncorrected errors and ≥95% accuracy.
+
+## Roadmap (agreed direction)
+1. **10-day program view**: "Day 1 … Day 10" so students click today's assignment.
+   - Day 1 baseline test, Day 5 mid-point test, Day 10 final test (compare against Day 1).
+   - MA path: terms → vitals → chief complaints → SOAP 1 → test → phone/refills → scheduling → SOAP 2 → patient instructions → final.
+   - PT path: terms → sig frequencies → sig routes → Tall Man → test → full labels → do-not-use + aux labels → insurance/PA → workflow/referrals → final.
+2. **Daily 3-hour rotation** (change activity every 20–30 min):
+   warm-up sprint (1-min timed tests) → today's skill → dictation (browser speechSynthesis reads a note aloud; student types it) → break → shift simulation (timed queue of mixed tasks, points for accuracy) → error hunt (find/fix planted errors in a note or label) → EHR-style data-entry forms (Tab between fields) → class challenge (projector-friendly).
+3. **Generated content** from realistic templates (random fictional names, vitals in plausible ranges, sig combos, label fields) so students never run out or retype the same passage.
+4. **Movement/ergonomics breaks** between activities.
+5. Teacher-facing: easy way to collect results (currently a "Copy my result" button students paste into an assignment).
+
+## Files
+- `index.html`: page shell
+- `css/styles.css`: styles; MA track is teal, PT track is plum (`body[data-track=rx]`)
+- `js/content/ma.js`, `js/content/rx.js`: drills; `js/content/glossary.js`: sig cheat sheet
+- `js/content/program.js`: the Day 1–10 plan per track (which drills/passages each day uses; `soon:true` marks planned-but-unbuilt activities)
+- `js/content/sprint.js`: warm-up sprint line pools + generator (`SPRINT.build(track)`)
+- `.claude/launch.json`: local static server for previewing (`file://` previews don't run scripts in the Claude pane)
+- `js/app.js`: typing engine (input handling, scoring, results, local bests)

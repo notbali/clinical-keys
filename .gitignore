@@ -1,0 +1,16 @@
+.DS_Store
+node_modules/
+
+# Secrets and local config: never commit these
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+
+# Build output and tooling
+dist/
+build/
+coverage/
+.vercel/
+.netlify/
+*.log
