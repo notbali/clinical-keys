@@ -107,6 +107,7 @@ create table public.login_attempts (
   id bigint generated always as identity primary key,
   client text not null,
   username text,
+  ok boolean not null default false,
   created_at timestamptz not null default now()
 );
 create index on public.login_attempts (client, created_at desc);
@@ -129,14 +130,15 @@ language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.students where id = sid and owner_id = auth.uid());
 $$;
 
--- A student can only ever write attempts for themselves, stamped with the server clock.
+-- When a signed-in student inserts an attempt, force it to be theirs and stamp the server clock.
+-- Server-side callers with no student session (the service role, imports) keep the values they send.
 create or replace function public.stamp_attempt() returns trigger
 language plpgsql security definer set search_path = public as $$
+declare sid uuid := public.my_student_id();
 begin
-  new.student_id := public.my_student_id();
-  new.created_at := now();
-  if new.student_id is null then
-    raise exception 'Student sign-in required';
+  if sid is not null then
+    new.student_id := sid;
+    new.created_at := now();
   end if;
   return new;
 end $$;

@@ -29,11 +29,12 @@ With no back end configured the app runs in **demo mode**: a fictional roster, w
 - `src/data/` the `Api` interface, the demo adapter and its seed data
 - `src/pages/` student and instructor screens
 - `src/styles/` theme and app styles
-- `supabase/` proposed database schema (not yet applied)
+- `supabase/` database schema, security checks and the student sign-in Edge Function
 - `docs/` design decisions and the back end plan
 - `prototype/` the original single-file typing trainer
 
 ## Status
 
-Phase 1 screens work on the demo adapter. Not built yet: the Supabase adapter and student-login function
-(`docs/BACKEND.md`), tests and achievements, dictation, shift simulation, error hunt and forms, and the Blackboard link.
+Phase 1 works on the demo adapter and on a local Supabase stack (see `docs/BACKEND.md` for how to run and test it).
+Not done: deploying to a hosted Supabase project, achievements, the day 1/5/10 tests, dictation, shift simulation, error hunt and
+forms, and the Blackboard launch and grade return.

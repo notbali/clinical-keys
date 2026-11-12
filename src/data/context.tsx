@@ -1,13 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type DependencyList, type ReactNode } from 'react';
 import type { Api } from './api';
 import { createDemoApi } from './demoApi';
+import { createSupabaseApi } from './supabaseApi';
 import { DEFAULT_SETTINGS, type Session, type Settings } from './types';
 
 const ApiContext = createContext<Api | null>(null);
 
 /** Picks the back end. With no Supabase settings in the environment the app runs on the demo adapter. */
 function createApi(): Api {
-  return createDemoApi();
+  const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  return url && anonKey ? createSupabaseApi({ url, anonKey }) : createDemoApi();
 }
 
 interface SessionState {
