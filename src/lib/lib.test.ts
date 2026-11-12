@@ -113,15 +113,39 @@ describe('typing grade', () => {
     expect(g.total).toBe(80);
     expect(g.computed).not.toBe(80);
   });
-  it('only averages the last three clean runs and ignores unclean ones', () => {
+  it('averages the last three finished runs, clean or not, and ignores runs with errors left', () => {
     const attempts = [
-      attempt({ accuracy: 80, createdAt: '2026-11-10T10:00:00Z', clean: false }),
+      attempt({ accuracy: 70, createdAt: '2026-11-09T10:00:00Z', completed: false, clean: false, errorsLeft: 4 }),
       attempt({ accuracy: 96, createdAt: '2026-11-10T11:00:00Z' }),
       attempt({ accuracy: 98, createdAt: '2026-11-11T11:00:00Z' }),
       attempt({ accuracy: 97, createdAt: '2026-11-12T11:00:00Z' }),
-      attempt({ accuracy: 90, createdAt: '2026-11-12T12:00:00Z', clean: false }),
+      attempt({ accuracy: 90, createdAt: '2026-11-12T12:00:00Z', clean: false }), // finished, just under 95%
+      attempt({ accuracy: 50, createdAt: '2026-11-12T13:00:00Z', completed: false, clean: false, revealed: true }),
     ];
     const g = computeTypingGrade({ attempts, track: 'ma', day: 3, settings: DEFAULT_SETTINGS });
-    expect(g.accuracyAvg).toBe(97);
+    expect(g.accuracyAvg).toBe(95); // 98, 97 and 90
+  });
+  it('gives partial credit to a student who finishes everything but never reaches 95%', () => {
+    const attempts = [
+      attempt({ accuracy: 88, wpm: 25, clean: false, createdAt: '2026-11-11T11:00:00Z' }),
+      attempt({ accuracy: 89, wpm: 24, clean: false, createdAt: '2026-11-12T11:00:00Z' }),
+      attempt({ accuracy: 90, wpm: 26, clean: false, createdAt: '2026-11-12T12:00:00Z' }),
+    ];
+    const g = computeTypingGrade({ attempts, track: 'ma', day: 2, settings: DEFAULT_SETTINGS });
+    expect(g.accuracyAvg).toBe(89);
+    expect(g.accuracyScore).toBe(94); // 89 / 95
+    expect(g.bestWpm).toBe(26);
+    expect(g.speedScore).toBe(74); // 26 / 35
+    expect(g.computed).toBeGreaterThan(0);
+  });
+  it('scores 0 on accuracy and speed only when no run was ever finished', () => {
+    const g = computeTypingGrade({
+      attempts: [attempt({ completed: false, clean: false, errorsLeft: 5, accuracy: 60, wpm: 40 })], track: 'ma', day: 1, settings: DEFAULT_SETTINGS,
+    });
+    expect(g.accuracyAvg).toBeNull();
+    expect(g.bestWpm).toBeNull();
+    expect(g.accuracyScore).toBe(0);
+    expect(g.speedScore).toBe(0);
+    expect(g.computed).toBe(0); // has attempts, so a grade exists, and it is 0
   });
 });

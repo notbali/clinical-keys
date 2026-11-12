@@ -3,9 +3,9 @@ import type { Attempt, GradeOverride, Settings } from '../data/types';
 import type { Track } from '../content/types';
 
 export interface TypingGrade {
-  /** Average accuracy of the last 3 clean runs, or null if there are none. */
+  /** Average accuracy of the last 3 finished runs (no errors left, answer not shown), or null if there are none. */
   accuracyAvg: number | null;
-  /** Best clean WPM, or null if there are no clean runs. */
+  /** Best WPM among finished runs, or null if there are none. */
   bestWpm: number | null;
   completion: { done: number; total: number };
   /** Each part is scored 0 to 100. */
@@ -33,10 +33,12 @@ export function computeTypingGrade(args: {
   const target = settings.targets[track];
   const w = settings.weights;
 
-  const clean = attempts.filter((a) => a.clean).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const last3 = clean.slice(-3);
+  // A finished run (no errors left, answer not shown) counts toward the grade even if accuracy was under 95%.
+  // "Clean" (95% or better) is only the bar for personal bests, so a student who is still learning is not graded as 0.
+  const finished = attempts.filter((a) => a.completed).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const last3 = finished.slice(-3);
   const accuracyAvg = last3.length ? last3.reduce((s, a) => s + a.accuracy, 0) / last3.length : null;
-  const bestWpm = clean.length ? Math.max(...clean.map((a) => a.wpm)) : null;
+  const bestWpm = finished.length ? Math.max(...finished.map((a) => a.wpm)) : null;
 
   const assigned = assignedThrough(track, Math.max(day, 1));
   const doneActs = assigned.filter((a) => doneCount(attempts, a.day, a.act, a.passages) >= a.passages.length).length;

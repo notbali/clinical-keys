@@ -21,7 +21,7 @@ export function Gradebook() {
 
   const todo = assignedThrough(me.track, current).filter((a) => doneCount(attempts, a.day, a.act, a.passages) < a.passages.length);
   const work: { title: string; why: string; to: string; cta: string }[] = [];
-  if (g.accuracyAvg != null && g.accuracyAvg < target.accuracy) work.push({ title: 'Accuracy first', why: `Your last clean runs average ${g.accuracyAvg}%, under the ${target.accuracy}% target. Slow down a little: fewer corrections makes you faster.`, to: '/today', cta: 'Go to today’s activities' });
+  if (g.accuracyAvg != null && g.accuracyAvg < target.accuracy) work.push({ title: 'Accuracy first', why: `Your last finished runs average ${g.accuracyAvg}%, under the ${target.accuracy}% target. Slow down a little: fewer corrections makes you faster.`, to: '/today', cta: 'Go to today’s activities' });
   if (g.bestWpm != null && g.bestWpm < target.wpm) work.push({ title: 'Build speed', why: `You’re ${target.wpm - g.bestWpm} WPM below the ${target.wpm} WPM target. Extra warm-up sprints are the fastest way to close it.`, to: '/practice?kind=sprint', cta: 'Start a warm-up sprint' });
   if (todo.length) work.push({ title: 'Finish what’s assigned', why: `${todo.length} activit${todo.length === 1 ? 'y is' : 'ies are'} unfinished through Day ${current}. Next up: ${todo[0].label} (Day ${todo[0].day}).`, to: '/today', cta: 'Open Today' });
   if (!work.length) work.push({ title: 'You’re on track', why: 'Keep your accuracy up and keep the streak going.', to: '/today', cta: 'Open Today' });
@@ -63,8 +63,8 @@ export function Gradebook() {
           <Card title="How your typing grade is calculated" subtitle="Updated after every run. No surprises.">
             <div>
               {[
-                { n: 'Accuracy', d: `Average of your last 3 clean runs: ${g.accuracyAvg ?? '—'}%. Target ${target.accuracy}%.`, m: `${g.accuracyScore} × ${w.accuracy}%`, p: part(w.accuracy, g.accuracyScore) },
-                { n: 'Speed', d: `Best clean WPM: ${g.bestWpm ?? '—'}. Target ${target.wpm}.`, m: `${g.speedScore} × ${w.speed}%`, p: part(w.speed, g.speedScore) },
+                { n: 'Accuracy', d: `Average of your last 3 finished runs: ${g.accuracyAvg ?? '—'}%. Target ${target.accuracy}%.`, m: `${g.accuracyScore} × ${w.accuracy}%`, p: part(w.accuracy, g.accuracyScore) },
+                { n: 'Speed', d: `Best WPM: ${g.bestWpm ?? '—'}. Target ${target.wpm}.`, m: `${g.speedScore} × ${w.speed}%`, p: part(w.speed, g.speedScore) },
                 { n: 'Activities completed', d: `${g.completion.done} of the ${g.completion.total} activities assigned through Day ${current}.`, m: `${g.completionScore} × ${w.completion}%`, p: part(w.completion, g.completionScore) },
               ].map((r) => (
                 <div className="row row-between" key={r.n} style={{ padding: '11px 0', borderTop: '1px solid var(--line-soft)', alignItems: 'baseline' }}>

@@ -5,7 +5,7 @@ import type { StudentMetrics } from './metrics';
 export function gradesCsv(rows: StudentMetrics[]): string {
   const header = [
     'Last Name', 'First Name', 'Username', 'Blackboard Username', 'Track', 'Program Day', 'Typing Grade',
-    'Overridden', 'Accuracy (last 3 clean runs)', 'Best Clean WPM', 'Activities Done', 'Activities Assigned', 'Last Active',
+    'Overridden', 'Accuracy (last 3 finished runs)', 'Best WPM', 'Activities Done', 'Activities Assigned', 'Last Active',
   ];
   const body = rows.map((m) => [
     m.student.lastName, m.student.firstName, m.student.username, m.student.externalId ?? '',
