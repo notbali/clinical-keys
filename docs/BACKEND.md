@@ -5,7 +5,7 @@ With `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` set the app uses `src/data
 browser-only demo adapter (`src/data/demoApi.ts`).
 
 What was verified locally:
-- `supabase/tests/rls.sql`: 37 row-level security checks, all passing (students see only their own rows, instructors only theirs,
+- `supabase/tests/rls.sql`: 41 row-level security and access checks, all passing (students see only their own rows, instructors only theirs,
   the audit log is append-only, `delete_class` is owner-only and removes only that class's data, and more).
 - `src/data/supabaseApi.integration.test.ts`: 8 end-to-end tests of the adapter and the `student-login` function (instructor and
   student sign-in, enroll, save runs, overrides, notes, archive blocks sign-in, delete cascades).
@@ -63,7 +63,7 @@ SB_URL=... SB_ANON=... SB_SERVICE=... npx vitest run src/data/supabaseApi.integr
 Reset the local database with `npx supabase db reset`. Never put hosted-project keys in a file in this repo.
 
 ## What the security checks cover
-`supabase/tests/rls.sql` runs these as separate users:
+`supabase/tests/rls.sql` runs these as separate users, after the explicit grants in migration `0002` (so they hold whether or not the project auto-exposes new tables):
 - A student can read and insert only their own attempts. Inserting with another student's id is ignored (the trigger overwrites it).
 - A student cannot read `students`, `classes`, `notes`, `audit_log`, or another student's attempts.
 - A student cannot update or delete attempts.

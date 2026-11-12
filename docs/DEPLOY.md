@@ -4,6 +4,10 @@ You do the account steps; keys stay in your own terminal and dashboards, never i
 
 1. **Create a Supabase project** at supabase.com (pick a region near the school; save the database password in a password manager).
    Free projects pause after a week of inactivity and have no backups, which a school break can trigger; Pro ($25/month) never pauses and keeps 7 days of backups. Use Pro before real students.
+   On the new-project form, under security: tick **Enable automatic RLS** (a safety net that turns row-level security on for any table
+   you add later) and untick **Automatically expose new tables** (Supabase recommends this). Neither choice breaks the app: migration
+   `0001` turns row-level security on for every table itself, and `0002` grants exactly the access the app needs. If a table
+   is ever added, give it both row-level security and an explicit grant.
 2. **Link and apply the schema** (from the repo, signed in with `npx supabase login`):
    `npx supabase link --project-ref <ref>` then `npx supabase db push`.
 3. **Deploy the sign-in function:** `npx supabase functions deploy student-login`, then
