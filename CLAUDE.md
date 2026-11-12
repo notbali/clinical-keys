@@ -8,11 +8,13 @@ Typing trainer for a 2-week Medical Assistant (MA) and Pharmacy Tech (PT) typing
 - Students open a link in a browser, no logins. Many may use school Chromebooks.
 - **Open question for the teacher:** are MA and PT students in the same room at the same time, or separate classes? This decides whether the 10-day program shares warm-ups and class challenges or runs as two separate programs.
 
-## Tech constraints
-- Plain HTML/CSS/JS, **no build step, no frameworks**. Must work when `index.html` is opened directly from disk (so: classic `<script>` tags, not ES modules) and when hosted as a static page.
-- Content lives in `js/content/*.js` as data; `js/app.js` is the engine. Keep content and engine separate.
-- Progress is stored in `localStorage` (wrapped in try/catch), per device only. There is no backend yet.
-- No external network calls besides Google Fonts.
+## Tech constraints (updated for the web app)
+- React + TypeScript + Vite. `npm run dev`, `npm test`, `npm run build`. The original no-build prototype is kept in `prototype/`.
+- Content lives in `src/content/*.ts` as data; logic lives in `src/lib` and `src/typing`; screens in `src/pages`. Keep content, logic and screens separate.
+- Screens talk to data only through the `Api` interface in `src/data/api.ts`. The demo adapter (browser storage, fictional roster) is the default; a Supabase adapter is planned (`docs/BACKEND.md`).
+- Colors and fonts come only from `src/styles/theme.css`.
+- This is a **public repo**: never commit secrets, real student names or exports. Use `.env.local` (ignored).
+- No external network calls besides Google Fonts, and later the chosen back end.
 
 ## Content rules (important)
 - All patients, prescribers, Rx numbers, and phone numbers are **fictional**.
