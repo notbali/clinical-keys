@@ -1,5 +1,6 @@
 import { normalizeUsername, uniqueUsername, makeUsername } from '../lib/username';
 import { todayISO } from '../lib/dates';
+import { isDefaultPlan, normalizePlan, skippedDays, validatePlan, type ClassPlan } from '../lib/plan';
 import type { Api, EnrollRow, NewAttempt, Result, StudentPreview, StudentRecord } from './api';
 import { buildSeed } from './seed';
 import {
@@ -18,6 +19,8 @@ interface DemoState {
   audit: AuditEntry[];
   settings: Settings;
   session: Session | null;
+  /** Class day plans by class id. Missing in demo state saved before plans existed. */
+  plans?: Record<string, ClassPlan>;
 }
 
 export interface StorageLike {
@@ -183,6 +186,7 @@ export function createDemoApi(opts: { storage?: StorageLike; now?: () => Date } 
       s.notes = s.notes.filter((n) => !ids.has(n.studentId));
       s.overrides = s.overrides.filter((o) => !ids.has(o.studentId));
       s.classes = s.classes.filter((x) => x.id !== id);
+      if (s.plans) delete s.plans[id];
       log(s, 'class.delete', c.name, `Permanently deleted the class and ${ids.size} students`);
     }),
 
@@ -256,6 +260,30 @@ export function createDemoApi(opts: { storage?: StorageLike; now?: () => Date } 
       log(s, 'grade.override.clear', st ? `${st.firstName} ${st.lastName}` : studentId, 'Removed the override');
     }),
     listAudit: () => read((s) => { requireInstructor(s); return s.audit; }),
+
+    getClassPlan: (classId) => read((s) => {
+      if (s.session?.role === 'student') {
+        const sid = s.session.studentId;
+        if (!s.enrollments.some((e) => e.studentId === sid && e.classId === classId)) throw new Error('Class not found.');
+      } else {
+        requireInstructor(s);
+        if (!s.classes.some((c) => c.id === classId)) throw new Error('Class not found.');
+      }
+      return normalizePlan(s.plans?.[classId]);
+    }),
+    setClassPlan: (classId, plan) => write((s) => {
+      requireInstructor(s);
+      const c = s.classes.find((x) => x.id === classId);
+      if (!c) throw new Error('Class not found.');
+      const bad = validatePlan(plan);
+      if (bad) throw new Error(bad);
+      s.plans = s.plans ?? {}; // saved demo state from before plans existed has no `plans`
+      if (isDefaultPlan(plan)) delete s.plans[classId];
+      else s.plans[classId] = { days: [...plan.days] };
+      const skipped = skippedDays(plan);
+      log(s, 'class.plan', c.name, isDefaultPlan(plan) ? 'Reset to the default Day 1 to Day 10 plan'
+        : `Teaching order ${plan.days.join(', ')}${skipped.length ? `; skipped Day ${skipped.join(', ')}` : ''}`);
+    }),
   };
   return api;
 }

@@ -33,6 +33,9 @@ insert into public.attempts (student_id, kind, track, passage, wpm, accuracy, er
 insert into public.notes (student_id, author_id, body) values ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-0000000000a1', 'private note');
 insert into public.audit_log (actor_id, action, subject, detail) values ('00000000-0000-0000-0000-0000000000a1', 'test', 'x', 'y');
 insert into public.login_attempts (client, username) values ('1.2.3.4', 'x');
+insert into public.class_plans (class_id, days) values
+  ('00000000-0000-0000-0000-0000000000c1', '{1,2,4,5,6,7,8,9,10}'),
+  ('00000000-0000-0000-0000-0000000000c2', '{2,1}');
 
 -- Helpers: run as a given user, count rows, or try a statement and report whether it raised.
 create function pg_temp.as_user(uid uuid, r text default 'authenticated') returns void language plpgsql as $f$
@@ -114,6 +117,11 @@ begin
   perform pg_temp.check_('student cannot touch login_attempts even by insert', pg_temp.raises($q$insert into public.login_attempts (client) values ('x')$q$));
   perform pg_temp.check_('student cannot create classes', pg_temp.raises($q$insert into public.classes (owner_id, name) values ('00000000-0000-0000-0000-0000000000a1','x')$q$));
   perform pg_temp.check_('student cannot call delete_class on a real class', pg_temp.raises($q$select public.delete_class('00000000-0000-0000-0000-0000000000c1')$q$));
+  perform pg_temp.check_('student reads only their own class plan', pg_temp.count_of('select 1 from public.class_plans') = 1
+    and pg_temp.count_of($q$select 1 from public.class_plans where class_id = '00000000-0000-0000-0000-0000000000c1'$q$) = 1);
+  perform pg_temp.check_('student cannot change their class plan', pg_temp.affected($q$update public.class_plans set days = '{1}'$q$) <= 0);
+  perform pg_temp.check_('student cannot delete a class plan', pg_temp.affected('delete from public.class_plans') <= 0);
+  perform pg_temp.check_('student cannot create a class plan', pg_temp.raises($q$insert into public.class_plans (class_id, days) values ('00000000-0000-0000-0000-0000000000c2', '{1}')$q$));
   reset role;
 
   ---------------------------------------------------------------- instructor 1
@@ -133,6 +141,15 @@ begin
   perform pg_temp.check_('audit log cannot be edited', pg_temp.affected($q$update public.audit_log set detail = 'changed'$q$) <= 0);
   perform pg_temp.check_('audit log cannot be deleted from', pg_temp.affected('delete from public.audit_log') <= 0);
   perform pg_temp.check_('instructor cannot delete another instructor''s class', pg_temp.raises($q$select public.delete_class('00000000-0000-0000-0000-0000000000c2')$q$));
+  perform pg_temp.check_('instructor sees only their own class plans', pg_temp.count_of('select 1 from public.class_plans') = 1);
+  perform pg_temp.check_('instructor can change their own class plan', pg_temp.affected($q$update public.class_plans set days = '{3,1,2}' where class_id = '00000000-0000-0000-0000-0000000000c1'$q$) = 1);
+  perform pg_temp.check_('instructor cannot change another instructor''s class plan', pg_temp.affected($q$update public.class_plans set days = '{9}' where class_id = '00000000-0000-0000-0000-0000000000c2'$q$) <= 0);
+  perform pg_temp.check_('instructor cannot create a plan for another instructor''s class', pg_temp.raises($q$insert into public.class_plans (class_id, days) values ('00000000-0000-0000-0000-0000000000c2', '{1}') on conflict (class_id) do update set days = excluded.days$q$));
+  perform pg_temp.check_('a plan with a repeated day is rejected', pg_temp.raises($q$update public.class_plans set days = '{1,1}' where class_id = '00000000-0000-0000-0000-0000000000c1'$q$));
+  perform pg_temp.check_('a plan with a day above 10 is rejected', pg_temp.raises($q$update public.class_plans set days = '{1,11}' where class_id = '00000000-0000-0000-0000-0000000000c1'$q$));
+  perform pg_temp.check_('an empty plan is rejected', pg_temp.raises($q$update public.class_plans set days = '{}' where class_id = '00000000-0000-0000-0000-0000000000c1'$q$));
+  perform pg_temp.check_('instructor can reset (delete) their own class plan', pg_temp.affected($q$delete from public.class_plans where class_id = '00000000-0000-0000-0000-0000000000c1'$q$) = 1);
+  perform pg_temp.check_('instructor can save a plan again for their own class', not pg_temp.raises($q$insert into public.class_plans (class_id, days) values ('00000000-0000-0000-0000-0000000000c1', '{1,3,2}')$q$));
   reset role;
 
   ---------------------------------------------------------------- anonymous
@@ -142,6 +159,7 @@ begin
   perform pg_temp.check_('anonymous cannot insert attempts', pg_temp.raises($q$insert into public.attempts (student_id, kind, track, passage, wpm, accuracy, errors_left, seconds, completed, clean) values ('00000000-0000-0000-0000-0000000000d1','sprint','ma',0,1,1,0,1,true,false)$q$));
   perform pg_temp.check_('anonymous cannot call delete_class', pg_temp.raises($q$select public.delete_class('00000000-0000-0000-0000-0000000000c1')$q$));
   perform pg_temp.check_('anonymous cannot call the helper functions', pg_temp.raises('select public.my_student_id()') and pg_temp.raises('select public.is_instructor()'));
+  perform pg_temp.check_('anonymous cannot read class plans', pg_temp.count_of('select 1 from public.class_plans') <= 0);
   perform pg_temp.check_('anonymous cannot read settings or classes', pg_temp.count_of('select 1 from public.settings') <= 0 and pg_temp.count_of('select 1 from public.classes') <= 0);
   reset role;
 
@@ -157,6 +175,9 @@ begin
   perform pg_temp.check_('delete_class leaves other instructors'' data alone',
     (select count(*) from public.students where username = 'threegamma') = 1
     and (select count(*) from public.attempts where student_id = '00000000-0000-0000-0000-0000000000d3') = 1);
+  perform pg_temp.check_('delete_class removes that class''s plan and keeps the other''s',
+    (select count(*) from public.class_plans where class_id = '00000000-0000-0000-0000-0000000000c1') = 0
+    and (select count(*) from public.class_plans where class_id = '00000000-0000-0000-0000-0000000000c2') = 1);
 end $t$;
 
 select case when ok then 'PASS' else 'FAIL' end as result, name from results order by ok, name;
