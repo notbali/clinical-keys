@@ -10,6 +10,7 @@ import { Shift } from './pages/student/Shift';
 import { Stretch } from './pages/student/Stretch';
 import { Certificate } from './pages/student/Certificate';
 import { WeakSprint } from './pages/student/WeakSprint';
+import { ChartForms } from './pages/student/ChartForms';
 import { InstructorSignIn } from './pages/instructor/SignIn';
 import { Hub } from './pages/instructor/Hub';
 import { Classes } from './pages/instructor/Classes';
@@ -46,6 +47,7 @@ export function App() {
         <Route path="/certificate" element={<Certificate />} />
         <Route path="/weak-words" element={<WeakSprint />} />
         <Route path="/challenge" element={<Challenge />} />
+        <Route path="/forms" element={<ChartForms />} />
       </Route>
 
       <Route element={<RequireRole role="instructor"><InstructorLayout /></RequireRole>}>

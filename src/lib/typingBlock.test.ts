@@ -22,16 +22,16 @@ describe('the typing block schedule', () => {
     for (const track of ['ma', 'rx'] as const) expect(typingBlock(track).map((r) => r.name.toLowerCase()).join(' ')).not.toMatch(/dictation|listen|audio/);
   });
 
-  it('marks the sprint, the skill drill, the error hunt, the stretch break, the shift simulation, the practice library and the class challenge as available, and the rest as planned', () => {
+  it('marks every row of the typing block as available now that all of its activities are built', () => {
     for (const track of ['ma', 'rx'] as const) {
       expect(typingBlock(track).map((r) => [r.name, r.built])).toEqual([
         ['Warm-up sprint', true], ['Today’s skill drill', true], ['Error hunt', true], ['Stretch break', true],
-        ['Shift simulation', true], ['Practice library', true], ['Chart entry forms', false], ['Class challenge', true],
+        ['Shift simulation', true], ['Practice library', true], ['Chart entry forms', true], ['Class challenge', true],
       ]);
     }
   });
 
-  it('sends the error hunt row to that track’s own hunt drill, the stretch, shift and challenge rows to their pages, and the practice library row to the library', () => {
+  it('sends the error hunt row to that track’s own hunt drill, the stretch, shift, forms and challenge rows to their pages, and the practice library row to the library', () => {
     for (const track of ['ma', 'rx'] as const) {
       const rows = typingBlock(track);
       const hunt = rows.find((r) => r.name === 'Error hunt')!;
@@ -40,8 +40,9 @@ describe('the typing block schedule', () => {
       expect(rows.find((r) => r.name === 'Practice library')!.to).toBe('/drills');
       expect(rows.find((r) => r.name === 'Stretch break')!.to).toBe('/stretch');
       expect(rows.find((r) => r.name === 'Shift simulation')!.to).toBe('/shift');
+      expect(rows.find((r) => r.name === 'Chart entry forms')!.to).toBe('/forms');
       expect(rows.find((r) => r.name === 'Class challenge')!.to).toBe('/challenge');
-      expect(rows.filter((r) => r.drillId || r.to).map((r) => r.name)).toEqual(['Error hunt', 'Stretch break', 'Shift simulation', 'Practice library', 'Class challenge']);
+      expect(rows.filter((r) => r.drillId || r.to).map((r) => r.name)).toEqual(['Error hunt', 'Stretch break', 'Shift simulation', 'Practice library', 'Chart entry forms', 'Class challenge']);
     }
   });
 });
