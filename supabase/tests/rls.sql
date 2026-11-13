@@ -40,6 +40,9 @@ insert into public.challenges (id, class_id, passages, status, ended_at) values
 insert into public.challenge_results (challenge_id, student_id, display_name, track, wpm, accuracy, errors_left, seconds, clean) values
   ('00000000-0000-0000-0000-0000000000e2', '00000000-0000-0000-0000-0000000000d2', 'Beta T.', 'rx', 30, 97.0, 0, 70, true),
   ('00000000-0000-0000-0000-0000000000e3', '00000000-0000-0000-0000-0000000000d3', 'Gamma T.', 'ma', 35, 98.0, 0, 65, true);
+insert into public.class_plans (class_id, days) values
+  ('00000000-0000-0000-0000-0000000000c1', '{1,2,4,5,6,7,8,9,10}'),
+  ('00000000-0000-0000-0000-0000000000c2', '{2,1}');
 
 -- Helpers: run as a given user, count rows, or try a statement and report whether it raised.
 create function pg_temp.as_user(uid uuid, r text default 'authenticated') returns void language plpgsql as $f$
@@ -121,6 +124,11 @@ begin
   perform pg_temp.check_('student cannot touch login_attempts even by insert', pg_temp.raises($q$insert into public.login_attempts (client) values ('x')$q$));
   perform pg_temp.check_('student cannot create classes', pg_temp.raises($q$insert into public.classes (owner_id, name) values ('00000000-0000-0000-0000-0000000000a1','x')$q$));
   perform pg_temp.check_('student cannot call delete_class on a real class', pg_temp.raises($q$select public.delete_class('00000000-0000-0000-0000-0000000000c1')$q$));
+  perform pg_temp.check_('student reads only their own class plan', pg_temp.count_of('select 1 from public.class_plans') = 1
+    and pg_temp.count_of($q$select 1 from public.class_plans where class_id = '00000000-0000-0000-0000-0000000000c1'$q$) = 1);
+  perform pg_temp.check_('student cannot change their class plan', pg_temp.affected($q$update public.class_plans set days = '{1}'$q$) <= 0);
+  perform pg_temp.check_('student cannot delete a class plan', pg_temp.affected('delete from public.class_plans') <= 0);
+  perform pg_temp.check_('student cannot create a class plan', pg_temp.raises($q$insert into public.class_plans (class_id, days) values ('00000000-0000-0000-0000-0000000000c2', '{1}')$q$));
 
   -- Class challenge, as student 1 (MA, class one).
   perform pg_temp.check_('student sees only their own class''s challenge rounds', pg_temp.count_of('select 1 from public.challenges') = 2);
@@ -178,6 +186,15 @@ begin
   perform pg_temp.check_('instructor can end their own round, and the end time is recorded', pg_temp.affected($q$update public.challenges set status = 'ended' where id = '00000000-0000-0000-0000-0000000000e1'$q$) = 1
     and pg_temp.count_of($q$select 1 from public.challenges where id = '00000000-0000-0000-0000-0000000000e1' and ended_at is not null$q$) = 1);
   perform pg_temp.check_('instructor can open a new round once the old one has ended', not pg_temp.raises($q$insert into public.challenges (class_id, passages) values ('00000000-0000-0000-0000-0000000000c1', '{"ma": {"drillId": "ma-gen-vitals", "seed": 9, "chartDate": "2026-11-12"}}')$q$));
+  perform pg_temp.check_('instructor sees only their own class plans', pg_temp.count_of('select 1 from public.class_plans') = 1);
+  perform pg_temp.check_('instructor can change their own class plan', pg_temp.affected($q$update public.class_plans set days = '{3,1,2}' where class_id = '00000000-0000-0000-0000-0000000000c1'$q$) = 1);
+  perform pg_temp.check_('instructor cannot change another instructor''s class plan', pg_temp.affected($q$update public.class_plans set days = '{9}' where class_id = '00000000-0000-0000-0000-0000000000c2'$q$) <= 0);
+  perform pg_temp.check_('instructor cannot create a plan for another instructor''s class', pg_temp.raises($q$insert into public.class_plans (class_id, days) values ('00000000-0000-0000-0000-0000000000c2', '{1}') on conflict (class_id) do update set days = excluded.days$q$));
+  perform pg_temp.check_('a plan with a repeated day is rejected', pg_temp.raises($q$update public.class_plans set days = '{1,1}' where class_id = '00000000-0000-0000-0000-0000000000c1'$q$));
+  perform pg_temp.check_('a plan with a day above 10 is rejected', pg_temp.raises($q$update public.class_plans set days = '{1,11}' where class_id = '00000000-0000-0000-0000-0000000000c1'$q$));
+  perform pg_temp.check_('an empty plan is rejected', pg_temp.raises($q$update public.class_plans set days = '{}' where class_id = '00000000-0000-0000-0000-0000000000c1'$q$));
+  perform pg_temp.check_('instructor can reset (delete) their own class plan', pg_temp.affected($q$delete from public.class_plans where class_id = '00000000-0000-0000-0000-0000000000c1'$q$) = 1);
+  perform pg_temp.check_('instructor can save a plan again for their own class', not pg_temp.raises($q$insert into public.class_plans (class_id, days) values ('00000000-0000-0000-0000-0000000000c1', '{1,3,2}')$q$));
   reset role;
 
   ---------------------------------------------------------------- anonymous
@@ -189,6 +206,7 @@ begin
   perform pg_temp.check_('anonymous cannot call the helper functions', pg_temp.raises('select public.my_student_id()') and pg_temp.raises('select public.is_instructor()'));
   perform pg_temp.check_('anonymous cannot read challenges or results', pg_temp.count_of('select 1 from public.challenges') <= 0 and pg_temp.count_of('select 1 from public.challenge_results') <= 0);
   perform pg_temp.check_('anonymous cannot submit a challenge result', pg_temp.raises($q$insert into public.challenge_results (challenge_id, student_id, display_name, track, wpm, accuracy, errors_left, seconds, clean) values ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-0000000000d2', 'Fake F.', 'rx', 50, 99.0, 2, 60, true)$q$));
+  perform pg_temp.check_('anonymous cannot read class plans', pg_temp.count_of('select 1 from public.class_plans') <= 0);
   perform pg_temp.check_('anonymous cannot read settings or classes', pg_temp.count_of('select 1 from public.settings') <= 0 and pg_temp.count_of('select 1 from public.classes') <= 0);
   reset role;
 
@@ -208,6 +226,9 @@ begin
   perform pg_temp.check_('delete_class leaves other instructors'' data alone',
     (select count(*) from public.students where username = 'threegamma') = 1
     and (select count(*) from public.attempts where student_id = '00000000-0000-0000-0000-0000000000d3') = 1);
+  perform pg_temp.check_('delete_class removes that class''s plan and keeps the other''s',
+    (select count(*) from public.class_plans where class_id = '00000000-0000-0000-0000-0000000000c1') = 0
+    and (select count(*) from public.class_plans where class_id = '00000000-0000-0000-0000-0000000000c2') = 1);
 end $t$;
 
 select case when ok then 'PASS' else 'FAIL' end as result, name from results order by ok, name;

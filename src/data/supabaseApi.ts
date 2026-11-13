@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { todayISO } from '../lib/dates';
+import { isDefaultPlan, normalizePlan, skippedDays, validatePlan, type ClassPlan } from '../lib/plan';
 import { makeUsername, normalizeUsername, uniqueUsername } from '../lib/username';
 import type { Api, EnrollRow, NewAttempt, Result, StudentPreview, StudentRecord } from './api';
 import type { Challenge, ChallengePassages, ChallengeResult } from './challengeTypes';
@@ -347,6 +348,29 @@ export function createSupabaseApi(arg: { url: string; anonKey: string } | Supaba
     async listChallengeResults(challengeId) {
       const rows = await all<ChallengeResultRow>((from, to) => db.from('challenge_results').select('*').eq('challenge_id', challengeId).order('submitted_at', { ascending: true }).range(from, to), 'challenge results');
       return rows.map(toChallengeResult);
+    },
+    // UNTESTED against a real database (needs migration 0003_class_plan.sql). Row-level security lets a student read
+    // only their own class's row and an instructor manage only their own classes' rows.
+    async getClassPlan(classId): Promise<ClassPlan> {
+      const { data, error } = await db.from('class_plans').select('days').eq('class_id', classId).maybeSingle();
+      if (error) fail('Could not load the day plan', error);
+      return normalizePlan(data ? { days: data.days } : undefined);
+    },
+    async setClassPlan(classId, plan) {
+      const bad = validatePlan(plan);
+      if (bad) throw new Error(bad);
+      const c = await db.from('classes').select('name').eq('id', classId).maybeSingle();
+      if (c.error || !c.data) throw new Error('Class not found.');
+      if (isDefaultPlan(plan)) {
+        const { error } = await db.from('class_plans').delete().eq('class_id', classId);
+        if (error) fail('Could not reset the day plan', error);
+      } else {
+        const { error } = await db.from('class_plans').upsert({ class_id: classId, days: plan.days, updated_at: new Date().toISOString() });
+        if (error) fail('Could not save the day plan', error);
+      }
+      const skipped = skippedDays(plan);
+      await audit('class.plan', c.data.name, isDefaultPlan(plan) ? 'Reset to the default Day 1 to Day 10 plan'
+        : `Teaching order ${plan.days.join(', ')}${skipped.length ? `; skipped Day ${skipped.join(', ')}` : ''}`);
     },
   };
   return api;

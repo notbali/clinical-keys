@@ -1,6 +1,7 @@
 import type { ISODate } from '../lib/dates';
 import type { Track } from '../content/types';
 import type { Challenge, ChallengePassages, ChallengeResult, NewChallengeResult } from './challengeTypes';
+import type { ClassPlan } from '../lib/plan';
 import type { Attempt, AuditEntry, ClassGroup, Enrollment, GradeOverride, Note, Session, Settings, Student } from './types';
 
 /** A student together with their (latest) enrollment, which drives "Day N". */
@@ -84,4 +85,10 @@ export interface Api {
   submitChallengeResult(challengeId: string, result: NewChallengeResult): Promise<ChallengeResult>;
   /** Everyone's results in a round (an instructor's, or the student's classmates'). Names are first name and last initial only. */
   listChallengeResults(challengeId: string): Promise<ChallengeResult[]>;
+  // Class day plan: which original program days a class is taught, and in what order (see src/lib/plan.ts).
+  // A student may read their own class's plan; only the instructor who owns the class may change it.
+  /** The class's plan, or the default Day 1 to Day 10 when none was saved. */
+  getClassPlan(classId: string): Promise<ClassPlan>;
+  /** Saves a plan (rejects an invalid one). Saving the default plan clears the class's plan. */
+  setClassPlan(classId: string, plan: ClassPlan): Promise<void>;
 }

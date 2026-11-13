@@ -1,6 +1,7 @@
 import { getDrill, PROGRAM } from '../content';
 import type { Activity, Drill, ProgramDay, Track } from '../content/types';
 import type { Attempt } from '../data/types';
+import { assignedDays, type ClassPlan } from './plan';
 
 export type ResolvedActivity =
   | { kind: 'sprint'; label: string; passages: number[] }
@@ -31,11 +32,17 @@ export function doneCount(attempts: Attempt[], day: number, act: number, passage
 
 export interface AssignedActivity { day: number; act: number; label: string; passages: number[] }
 
-/** Every real (not "coming soon") activity from Day 1 through `throughDay`. */
-export function assignedThrough(track: Track, throughDay: number): AssignedActivity[] {
+/**
+ * Every real (not "coming soon") activity from Day 1 through `throughDay`. With a class plan it is the days taught
+ * so far in the plan's order (skipped days left out); without one, or with the default plan, it is Day 1 to `throughDay`.
+ */
+export function assignedThrough(track: Track, throughDay: number, plan?: ClassPlan | null): AssignedActivity[] {
   const out: AssignedActivity[] = [];
-  for (const d of programFor(track)) {
-    if (d.n > throughDay) break;
+  const program = programFor(track);
+  const days = plan
+    ? assignedDays(plan, throughDay).map((n) => program.find((d) => d.n === n)).filter((d): d is ProgramDay => !!d)
+    : program.filter((d) => d.n <= throughDay);
+  for (const d of days) {
     d.acts.forEach((a, i) => {
       const r = resolveActivity(a);
       if (r.kind !== 'soon') out.push({ day: d.n, act: i, label: r.label, passages: r.passages });

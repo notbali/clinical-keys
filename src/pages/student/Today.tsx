@@ -31,7 +31,7 @@ export function Today() {
   const bests = [
     ...new Map(attempts.filter((a) => a.clean).sort((a, b) => b.wpm - a.wpm).map((a) => [drillKey(a), a])).entries(),
   ].slice(0, 4);
-  const behind = assignedThrough(me.track, current).length - grade.completion.done;
+  const behind = assignedThrough(me.track, current, settings.classPlan).length - grade.completion.done;
 
   return (
     <>

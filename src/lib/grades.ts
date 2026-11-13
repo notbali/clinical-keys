@@ -1,6 +1,7 @@
 import { assignedThrough, doneCount } from './program';
 import type { Attempt, GradeOverride, Settings } from '../data/types';
 import type { Track } from '../content/types';
+import type { WithPlan } from './plan';
 
 export interface TypingGrade {
   /** Average accuracy of the last 3 finished runs (no errors left, answer not shown), or null if there are none. */
@@ -26,7 +27,8 @@ export function computeTypingGrade(args: {
   track: Track;
   /** The student's current program day. */
   day: number;
-  settings: Pick<Settings, 'targets' | 'weights'>;
+  /** `classPlan` (optional) leaves skipped days out of what is assigned. */
+  settings: Pick<Settings, 'targets' | 'weights'> & WithPlan;
   override?: GradeOverride;
 }): TypingGrade {
   const { attempts, track, day, settings, override } = args;
@@ -40,7 +42,7 @@ export function computeTypingGrade(args: {
   const accuracyAvg = last3.length ? last3.reduce((s, a) => s + a.accuracy, 0) / last3.length : null;
   const bestWpm = finished.length ? Math.max(...finished.map((a) => a.wpm)) : null;
 
-  const assigned = assignedThrough(track, Math.max(day, 1));
+  const assigned = assignedThrough(track, Math.max(day, 1), settings.classPlan);
   const doneActs = assigned.filter((a) => doneCount(attempts, a.day, a.act, a.passages) >= a.passages.length).length;
 
   const accuracyScore = accuracyAvg == null ? 0 : clamp((accuracyAvg / target.accuracy) * 100);
