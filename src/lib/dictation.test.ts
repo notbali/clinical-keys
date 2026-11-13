@@ -240,3 +240,14 @@ describe('dictationSources: what a student can dictate', () => {
     }
   });
 });
+
+describe('speechSupported', () => {
+  it('needs both the speech engine and the utterance constructor, and no window at all means no', async () => {
+    const { speechSupported, dictationBestKey } = await import('./dictation');
+    expect(speechSupported(undefined)).toBe(false);
+    expect(speechSupported({})).toBe(false);
+    expect(speechSupported({ speechSynthesis: {} })).toBe(false);
+    expect(speechSupported({ speechSynthesis: {}, SpeechSynthesisUtterance: class {} })).toBe(true);
+    expect(dictationBestKey('s1')).not.toBe(dictationBestKey('s2'));
+  });
+});

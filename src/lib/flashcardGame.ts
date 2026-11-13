@@ -61,3 +61,6 @@ export function betterRound(prev: RoundBest | null, next: RoundBest, fullSize?: 
   if (!prev) return true;
   return next.score > prev.score || (next.score === prev.score && next.bestStreak > prev.bestStreak);
 }
+
+/** localStorage key for a student's best round. Kept per student, because Chromebooks are shared. */
+export const flashBestKey = (studentId: string): string => `ck.flashcards.best.${studentId}`;

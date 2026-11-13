@@ -120,7 +120,7 @@ function plantTallMan(rng: Rng, o: RxOrder, shown: Shown): Flaw {
   };
 }
 
-function plantDoNotUse(rng: Rng, o: RxOrder, shown: Shown): Flaw {
+function plantDoNotUse(rng: Rng, shown: Shown): Flaw {
   const wrong = pick(rng, ['QD', 'qd']);
   return {
     shown: { ...shown, directions: shown.directions.replace('once daily', wrong) },
@@ -247,7 +247,7 @@ function plantTranslation(rng: Rng, o: RxOrder, shown: Shown): Flaw {
 function plant(rng: Rng, category: FlashCategory, o: RxOrder, shown: Shown, patient?: Patient): Flaw {
   switch (category) {
     case 'tall-man': return plantTallMan(rng, o, shown);
-    case 'do-not-use': return plantDoNotUse(rng, o, shown);
+    case 'do-not-use': return plantDoNotUse(rng, shown);
     case 'trailing-zero': return plantTrailingZero(o, shown);
     case 'quantity': return plantQuantity(rng, o, shown);
     case 'allergy': return plantAllergy(rng, o, shown, patient!);

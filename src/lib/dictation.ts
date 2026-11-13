@@ -269,3 +269,8 @@ export function dictationSources(track: Track): { id: string; label: string }[] 
 export function speechSupported(w: { speechSynthesis?: unknown; SpeechSynthesisUtterance?: unknown } | undefined): boolean {
   return !!w && !!w.speechSynthesis && typeof w.SpeechSynthesisUtterance === 'function';
 }
+
+/** localStorage keys. The best is kept per student, because Chromebooks are shared; the voice and speed belong to the device. */
+export const dictationBestKey = (studentId: string): string => `ck.dictation.best.${studentId}`;
+export const DICTATION_VOICE_KEY = 'ck.dictation.voice';
+export const DICTATION_RATE_KEY = 'ck.dictation.rate';
