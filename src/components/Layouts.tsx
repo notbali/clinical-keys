@@ -6,6 +6,8 @@ import type { Attempt, GradeOverride, Settings } from '../data/types';
 import { programDay, todayISO, type ISODate } from '../lib/dates';
 import { defaultPlan, effectiveDay, planForStudent, type WithPlan } from '../lib/plan';
 import { ErrorNote, TopLink } from './ui';
+import { DisplaySettings } from './DisplaySettings';
+import { SaveQueueBanner, SaveQueueProvider } from './SaveQueue';
 
 export function DemoBanner() {
   const api = useApi();
@@ -62,6 +64,14 @@ export function StudentLayout() {
   const day = effectiveDay(plan, position);
   const ctx: StudentCtx = { me, attempts, settings: { ...settings, classPlan: planForStudent(plan, position) }, override, today, ehr, day, reload: loaded.reload };
 
+  return (
+    <SaveQueueProvider studentId={me.id} onSaved={loaded.reload}>
+      <StudentFrame ctx={ctx} ehr={ehr} me={me} signOut={signOut} />
+    </SaveQueueProvider>
+  );
+}
+
+function StudentFrame({ ctx, ehr, me, signOut }: { ctx: StudentCtx; ehr: boolean; me: StudentRecord; signOut: () => Promise<void> }) {
   if (ehr) {
     const stamp = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
     return (
@@ -73,6 +83,7 @@ export function StudentLayout() {
           <div className="ehr-bar-mid">{stamp}</div>
           <div className="ehr-user">
             <span translate="no">{me.lastName.toUpperCase()}, {me.firstName} · <span className="mono">{me.username}</span></span>
+            <DisplaySettings className="btn btn-sm" />
             <button className="btn btn-sm" onClick={() => void signOut()}>Sign out</button>
           </div>
         </header>
@@ -83,7 +94,7 @@ export function StudentLayout() {
             <NavLink to="/gradebook" className={({ isActive }) => (isActive ? 'on' : '')}>My results<small>Grades and progress</small></NavLink>
             <NavLink to="/drills" className={({ isActive }) => (isActive ? 'on' : '')}>Practice library<small>All drills</small></NavLink>
           </nav>
-          <main id="main" className="page ehr-main"><Outlet context={ctx} /></main>
+          <main id="main" className="page ehr-main"><SaveQueueBanner /><Outlet context={ctx} /></main>
         </div>
       </>
     );
@@ -103,11 +114,12 @@ export function StudentLayout() {
           </nav>
           <div className="row">
             <div className="who"><b translate="no">{me.firstName} {me.lastName}</b><span className="mono" translate="no">{me.username}</span></div>
+            <DisplaySettings />
             <button className="btn btn-secondary btn-sm" onClick={() => void signOut()}>Sign out</button>
           </div>
         </div>
       </header>
-      <main id="main" className="page"><Outlet context={ctx} /></main>
+      <main id="main" className="page"><SaveQueueBanner /><Outlet context={ctx} /></main>
     </>
   );
 }
