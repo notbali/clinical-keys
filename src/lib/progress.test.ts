@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bestTimeline, drillKey, improvement, improvementPhrase } from './progress';
+import { activityLabel, bestTimeline, drillKey, improvement, improvementPhrase } from './progress';
 import { at, attempt } from '../test/fixtures';
 import type { Attempt } from '../data/types';
 
@@ -142,5 +142,15 @@ describe('improvementPhrase', () => {
   it('has no phrase until there is something to compare', () => {
     expect(improvementPhrase({ baseline: null, latest: null, wpmGain: null, accuracyGain: null })).toBeNull();
     expect(improvementPhrase({ baseline: { wpm: 1, accuracy: 1, day: 1, at: '' }, latest: null, wpmGain: null, accuracyGain: null })).toBeNull();
+  });
+});
+
+describe('activityLabel', () => {
+  it('names sprints, weak-word sprints, drills and generated drills', () => {
+    expect(activityLabel('sprint')).toBe('Warm-up sprint');
+    expect(activityLabel('weak-words')).toBe('Weak-word sprint');
+    expect(activityLabel('ma-terms')).toBe('Medical Term Warm-Up');
+    expect(activityLabel('ma-gen-vitals')).toBe('Vitals Entries (Generated)');
+    expect(activityLabel('unknown-id')).toBe('unknown-id');
   });
 });

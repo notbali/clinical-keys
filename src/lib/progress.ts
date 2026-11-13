@@ -1,4 +1,4 @@
-import { getDrill } from '../content';
+import { getDrill, getGeneratedDrill } from '../content';
 import type { Attempt } from '../data/types';
 
 /** Which personal-best line a run belongs to: its drill, the warm-up sprint, or the weak-word sprint. */
@@ -7,7 +7,14 @@ export function drillKey(a: Pick<Attempt, 'kind' | 'drillId'>): string {
   return a.drillId ?? '';
 }
 
-const round1 = (n: number) => Math.round(n * 10) / 10;
+/** Student-facing name for a drillKey. */
+export function activityLabel(key: string): string {
+  if (key === 'sprint') return 'Warm-up sprint';
+  if (key === 'weak-words') return 'Weak-word sprint';
+  return getDrill(key)?.title ?? getGeneratedDrill(key)?.title ?? key;
+}
+
+const round1 =(n: number) => Math.round(n * 10) / 10;
 const byTime = (a: Attempt, b: Attempt) => a.createdAt.localeCompare(b.createdAt);
 
 export interface BestPoint { at: string; wpm: number; accuracy: number }

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Tag } from '../../components/ui';
 import { generatedDrillsForTrack, libraryDrills, SPRINT } from '../../content';
 import { useStudent } from '../../components/Layouts';
+import { WeakWordsCard } from '../../components/WeakWords';
 
 /** Every drill for the student's track, outside the 10-day program. Runs here are saved but do not count toward activity progress. */
 export function Drills() {
@@ -20,6 +21,7 @@ export function Drills() {
           <p className="muted" style={{ fontSize: 14.5, margin: '4px 0 10px' }}>A fresh {SPRINT.limit}-second run of short, job-style lines.</p>
           <div className="hint">{bestSprint ? <>Best: <b>{bestSprint.wpm} WPM</b> · {bestSprint.accuracy}%</> : 'No clean run yet'}</div>
         </Link>
+        <WeakWordsCard />
         {libraryDrills(me.track).map((d) => {
           const b = best(d.id);
           return (

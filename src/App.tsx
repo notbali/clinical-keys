@@ -6,6 +6,8 @@ import { Today } from './pages/student/Today';
 import { Practice } from './pages/student/Practice';
 import { Gradebook } from './pages/student/Gradebook';
 import { Drills } from './pages/student/Drills';
+import { Certificate } from './pages/student/Certificate';
+import { WeakSprint } from './pages/student/WeakSprint';
 import { InstructorSignIn } from './pages/instructor/SignIn';
 import { Hub } from './pages/instructor/Hub';
 import { Classes } from './pages/instructor/Classes';
@@ -31,6 +33,8 @@ export function App() {
         <Route path="/practice" element={<Practice />} />
         <Route path="/gradebook" element={<Gradebook />} />
         <Route path="/drills" element={<Drills />} />
+        <Route path="/certificate" element={<Certificate />} />
+        <Route path="/weak-words" element={<WeakSprint />} />
       </Route>
 
       <Route element={<RequireRole role="instructor"><InstructorLayout /></RequireRole>}>
