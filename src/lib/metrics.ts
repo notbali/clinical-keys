@@ -1,6 +1,7 @@
 import { programDay, todayISO, type ISODate } from './dates';
 import { computeTypingGrade, type TypingGrade } from './grades';
 import { assignedThrough, doneCount, programFor, resolveActivity } from './program';
+import { atRiskFlags, unfinishedEarlier, type RiskFlag } from './insights';
 import { lastActiveAt, latestDay } from './stats';
 import type { StudentRecord } from '../data/api';
 import type { Attempt, GradeOverride, Settings } from '../data/types';
@@ -19,6 +20,10 @@ export interface StudentMetrics {
   latestAccuracy: number | null;
   lastActive: string | null;
   flags: Flag[];
+  /** At-risk flags (src/lib/insights.ts): inactive, low accuracy, unfinished earlier work. Each has its reason in words. */
+  risk: RiskFlag[];
+  /** Activities from earlier days that are still unfinished. */
+  behindBy: number;
   attempts: Attempt[];
 }
 
@@ -70,6 +75,27 @@ export function buildMetrics(args: {
       student, day, grade, todayDone, todayTotal,
       latestWpm: latest?.wpm ?? null, latestAccuracy: latest?.accuracy ?? null,
       lastActive: lastActiveAt(mine), flags, attempts: mine,
+      risk: atRiskFlags({ track: student.track, startDate: start, attempts: mine, today, closed }),
+      behindBy: unfinishedEarlier(student.track, day, mine).length,
     };
   });
 }
+
+/** The older flag kinds that an at-risk flag of the same subject replaces, so a reason is never listed twice. */
+const SUPERSEDED_BY: Partial<Record<Flag['kind'], RiskFlag['kind']>> = { accuracy: 'accuracy', behind: 'unfinished' };
+
+/** The older flags (exit, new, accuracy, behind) minus the ones an at-risk flag already says. */
+export function uncoveredFlags(m: Pick<StudentMetrics, 'risk' | 'flags'>): Flag[] {
+  const covered = new Set(m.risk.map((r) => r.kind));
+  return m.flags.filter((f) => {
+    const replacedBy = SUPERSEDED_BY[f.kind];
+    return replacedBy === undefined || !covered.has(replacedBy);
+  });
+}
+
+/** Why a student needs attention, in words: the at-risk reasons first, then older accuracy/behind flags they do not cover. */
+export function attentionReasons(m: Pick<StudentMetrics, 'risk' | 'flags'>): string[] {
+  return [...m.risk.map((r) => r.text), ...uncoveredFlags(m).filter((f) => f.kind === 'accuracy' || f.kind === 'behind').map((f) => f.text)];
+}
+
+export const needsAttention = (m: Pick<StudentMetrics, 'risk' | 'flags'>): boolean => attentionReasons(m).length > 0;

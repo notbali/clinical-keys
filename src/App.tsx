@@ -11,6 +11,9 @@ import { Hub } from './pages/instructor/Hub';
 import { Classes } from './pages/instructor/Classes';
 import { StudentRecordPage } from './pages/instructor/StudentRecord';
 import { Settings } from './pages/instructor/Settings';
+import { Heatmap } from './pages/instructor/Heatmap';
+import { Rolling } from './pages/instructor/Rolling';
+import { Report } from './pages/instructor/Report';
 
 function Home() {
   const { session } = useSession();
@@ -37,6 +40,9 @@ export function App() {
         <Route path="/hub" element={<Hub />} />
         <Route path="/classes" element={<Classes />} />
         <Route path="/students/:id" element={<StudentRecordPage />} />
+        <Route path="/students/:id/report" element={<Report />} />
+        <Route path="/heatmap" element={<Heatmap />} />
+        <Route path="/rolling" element={<Rolling />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
 
