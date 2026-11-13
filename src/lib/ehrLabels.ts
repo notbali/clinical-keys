@@ -20,6 +20,8 @@ const WINDOW: Record<string, string> = {
   'rx-lasa-2': 'Drug Name Entry',
   'rx-daysupply': 'Prescription Label Entry',
   'rx-calls': 'Pharmacy Note',
+  'ma-hunt': 'Chart Review: Proofread',
+  'rx-hunt': 'Pharmacist Check: Proofread',
   'ma-test': 'Typing Test',
   'rx-test': 'Typing Test',
 };

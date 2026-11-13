@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DRILLS, GLOSSARY, PROGRAM, SPRINT, getDrill, libraryDrills } from './index';
+import { FDA_TALL_MAN as FDA } from '../test/tallman';
 import { SPRINT_LINES } from './sprint';
 import type { Drill, Track } from './types';
 
@@ -26,6 +27,8 @@ const NEW_DRILLS: Record<string, { track: Track; min: number }> = {
   'rx-lasa-2': { track: 'rx', min: 5 },
   'rx-daysupply': { track: 'rx', min: 6 },
   'rx-calls': { track: 'rx', min: 5 },
+  'ma-hunt': { track: 'ma', min: 8 },
+  'rx-hunt': { track: 'rx', min: 8 },
   'ma-test': { track: 'ma', min: 2 },
   'rx-test': { track: 'rx', min: 2 },
 };
@@ -226,14 +229,6 @@ describe('sig code translator II', () => {
 });
 
 describe('Tall Man lettering', () => {
-  /** FDA "List of Established Drug Names Recommended to Use Tall Man Lettering", checked against fda.gov in June 2026. */
-  const FDA = new Set([
-    'acetaZOLAMIDE', 'acetoHEXAMIDE', 'buPROPion', 'busPIRone', 'chlorproMAZINE', 'chlorproPAMIDE', 'CARBOplatin', 'CISplatin',
-    'clomiPHENE', 'clomiPRAMINE', 'cycloSERINE', 'cycloSPORINE', 'DAUNOrubicin', 'DOXOrubicin', 'dimenhyDRINATE', 'diphenhydrAMINE',
-    'DOBUTamine', 'DOPamine', 'glipiZIDE', 'glyBURIDE', 'hydrALAZINE', 'hydrOXYzine', 'medroxyPROGESTERone', 'methylPREDNISolone',
-    'methylTESTOSTERone', 'NIFEdipine', 'niCARdipine', 'predniSONE', 'prednisoLONE', 'risperiDONE', 'rOPINIRole', 'sulfADIAZINE',
-    'sulfiSOXAZOLE', 'TOLAZamide', 'TOLBUTamide', 'traMADol', 'traZODone', 'vinBLAStine', 'vinCRIStine',
-  ]);
   const tallMan = (text: string) => (text.match(/[A-Za-z]{5,}/g) ?? []).filter((w) => w !== w.toLowerCase() && w !== w.toUpperCase() && w !== w[0] + w.slice(1).toLowerCase());
 
   it('spells every name in Look-Alike Drugs II exactly as the FDA list does', () => {

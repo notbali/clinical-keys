@@ -6,10 +6,17 @@ import { useApi } from '../../data/context';
 import { getDrill, GLOSSARY, SPRINT } from '../../content';
 import { programFor, resolveActivity } from '../../lib/program';
 import { TypingPlayer } from '../../typing/TypingPlayer';
+import { ErrorHuntPlayer } from '../../typing/ErrorHuntPlayer';
 import { PatientBanner } from '../../components/PatientBanner';
 import { windowTitle } from '../../lib/ehrLabels';
 import type { RunResult } from '../../typing/engine';
 import type { NewAttempt } from '../../data/api';
+
+function huntMessage(r: RunResult): { title: string; text: string; warn: boolean } {
+  if (r.revealed) return { warn: false, title: 'Answers shown', text: 'Good practice. Read why each one was wrong, then try the next note without the answers.' };
+  if (r.errorsLeft > 0) return { warn: true, title: 'Not clear yet', text: `${r.errorsLeft} problem${r.errorsLeft > 1 ? 's' : ''} left in the note: errors you missed, or new ones you added. The review below shows each one. A note with errors cannot go out, so try it again.` };
+  return { warn: false, title: 'Every error found', text: `A clean note with no new mistakes.${r.peeks ? ` (${r.peeks} hint${r.peeks > 1 ? 's' : ''} used.)` : ''}` };
+}
 
 function messageFor(r: RunResult, sprint: boolean, hidden: boolean): { title: string; text: string; warn: boolean } {
   if (sprint && r.errorsLeft > 0) return { warn: true, title: 'Time! Errors left behind', text: `${r.errorsLeft} wrong character${r.errorsLeft > 1 ? 's' : ''} still in what you typed. On the job those get fixed before anything goes out. Next sprint, fix them as you go and keep your accuracy up.` };
@@ -83,19 +90,24 @@ export function Practice() {
 
   const title = kind === 'sprint' ? 'Warm-up Sprint' : drill!.title;
   const rx = me.track === 'rx';
-  const msg = result ? messageFor(result, kind === 'sprint', drill?.mode === 'hidden') : null;
+  const hunt = drill?.mode === 'hunt';
+  const msg = result ? (hunt ? huntMessage(result) : messageFor(result, kind === 'sprint', drill?.mode === 'hidden')) : null;
   const pos = list.indexOf(passage) + 1;
 
   const scenario = (
     <div className="scenario">
       <div dangerouslySetInnerHTML={{ __html: kind === 'sprint' ? SPRINT.intro : drill!.items[passage].ctx }} />
       <p className="muted" style={{ fontSize: 14, marginTop: 6 }}>
-        {kind === 'sprint' ? SPRINT.note : drill!.mode === 'hidden' ? 'Type the label directions in full. Letters appear as you get them right, and red means wrong. Use the cheat sheet below if you’re stuck.' : 'Type it exactly as shown. Capitals, numbers, spacing and punctuation all count.'}
+        {kind === 'sprint' ? SPRINT.note : hunt ? 'Proofread the note. Edit the text to fix every error, then press Check my note. Stuck? Use a hint.' : drill!.mode === 'hidden' ? 'Type the label directions in full. Letters appear as you get them right, and red means wrong. Use the cheat sheet below if you’re stuck.' : 'Type it exactly as shown. Capitals, numbers, spacing and punctuation all count.'}
       </p>
     </div>
   );
-  const player = (
-    <TypingPlayer key={`${kind}-${drill?.id}-${passage}-${round}`} target={target} mode={drill?.mode ?? 'copy'} limit={kind === 'sprint' ? SPRINT.limit : undefined} onFinish={onFinish} onRestart={restart} />
+  const playerKey = `${kind}-${drill?.id}-${passage}-${round}`;
+  const current = drill?.items[passage];
+  const player = hunt && current?.flawed && current.errors ? (
+    <ErrorHuntPlayer key={playerKey} flawed={current.flawed} fixed={current.text} errors={current.errors} onFinish={onFinish} onRestart={restart} />
+  ) : (
+    <TypingPlayer key={playerKey} target={target} mode={drill?.mode === 'hidden' ? 'hidden' : 'copy'} limit={kind === 'sprint' ? SPRINT.limit : undefined} onFinish={onFinish} onRestart={restart} />
   );
 
   return (
@@ -117,7 +129,7 @@ export function Practice() {
             <span className="note-meta">Author: <span translate="no">{me.firstName} {me.lastName}</span> · {kind === 'sprint' ? `${SPRINT.limit}-second sprint` : `Passage ${pos} of ${list.length}`}</span>
           </div>
           <div className="note-body">{scenario}{player}</div>
-          <div className="note-foot"><span>{kind === 'sprint' ? 'The clock starts on your first keystroke.' : rx ? 'Enter it exactly as shown. An entry with errors cannot go to the pharmacist.' : 'Type the note exactly as shown. A note with errors cannot be signed.'}</span><span className="spacer" /><span>Training record, fictional patient</span></div>
+          <div className="note-foot"><span>{kind === 'sprint' ? 'The clock starts on your first keystroke.' : hunt ? (rx ? 'Proofread before it goes to the pharmacist. An entry with errors cannot go out.' : 'Proofread before it is signed. A note with errors cannot be signed.') : rx ? 'Enter it exactly as shown. An entry with errors cannot go to the pharmacist.' : 'Type the note exactly as shown. A note with errors cannot be signed.'}</span><span className="spacer" /><span>Training record, fictional patient</span></div>
         </div>
       ) : (<>{scenario}{player}</>)}
 
@@ -126,7 +138,7 @@ export function Practice() {
           <h2 style={{ fontSize: 22, fontWeight: 700 }}>{msg.title}</h2>
           <p className="muted">{msg.text}{result.clean ? ' This run counts toward your personal best.' : ''}</p>
           <div className="result-stats num">
-            <div><span>WPM</span><b>{result.wpm}</b></div><div><span>Accuracy</span><b>{result.accuracy}%</b></div>
+            <div><span>{hunt ? 'Hints' : 'WPM'}</span><b>{hunt ? result.peeks : result.wpm}</b></div><div><span>Accuracy</span><b>{result.accuracy}%</b></div>
             <div><span>Time</span><b>{mmss(result.seconds)}</b></div><div><span>Errors left</span><b>{result.errorsLeft}</b></div>
           </div>
           {saveError && <div style={{ marginBottom: 12 }}><ErrorNote>{saveError}</ErrorNote></div>}

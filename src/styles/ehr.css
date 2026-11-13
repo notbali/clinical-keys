@@ -92,6 +92,7 @@ body[data-style='ehr'] .tr.head { background: var(--ehr-title); color: var(--ink
 .note-title b { font-size: 14px; }
 .note-meta { font-size: 12px; color: var(--muted); }
 .note-body { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+.note-window .hunt-input { border-radius: 2px; border-color: var(--line-strong); background: #fffef9; }
 .note-window .typebox { border-radius: 2px; border-color: var(--line-strong); background: #fffef9; }
 .note-window .typebox.focused { box-shadow: 0 0 0 2px var(--accent-soft); }
 .note-window .stat { border-radius: 2px; }

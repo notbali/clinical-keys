@@ -7,6 +7,8 @@ import { useStudent } from '../../components/Layouts';
 export function Drills() {
   const { me, attempts } = useStudent();
   const best = (id: string) => attempts.filter((a) => a.clean && a.drillId === id).sort((a, b) => b.wpm - a.wpm)[0];
+  /** Error hunts have no speed, so they show how many notes were fixed completely. */
+  const cleared = (id: string) => new Set(attempts.filter((a) => a.completed && a.drillId === id).map((a) => a.passage)).size;
   const bestSprint = attempts.filter((a) => a.clean && a.kind === 'sprint').sort((a, b) => b.wpm - a.wpm)[0];
   return (
     <>
@@ -22,10 +24,10 @@ export function Drills() {
           const b = best(d.id);
           return (
             <Link key={d.id} to={`/practice?kind=drill&drill=${d.id}&passage=0`} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div className="row row-between"><Tag tone={d.mode === 'hidden' ? 'warn' : 'neutral'}>{d.mode === 'hidden' ? 'Translate' : 'Copy'}</Tag><span className="muted" style={{ fontSize: 13 }}>{d.items.length} passages</span></div>
+              <div className="row row-between"><Tag tone={d.mode === 'hidden' ? 'warn' : d.mode === 'hunt' ? 'info' : 'neutral'}>{d.mode === 'hidden' ? 'Translate' : d.mode === 'hunt' ? 'Proofread' : 'Copy'}</Tag><span className="muted" style={{ fontSize: 13 }}>{d.items.length} passages</span></div>
               <h2 className="card-title" style={{ marginTop: 8 }}>{d.title}</h2>
               <p className="muted" style={{ fontSize: 14.5, margin: '4px 0 10px' }}>{d.blurb}</p>
-              <div className="hint">{b ? <>Best: <b>{b.wpm} WPM</b> · {b.accuracy}%</> : 'No clean run yet'}</div>
+              <div className="hint">{d.mode === 'hunt' ? <>{cleared(d.id)} of {d.items.length} notes cleared</> : b ? <>Best: <b>{b.wpm} WPM</b> · {b.accuracy}%</> : 'No clean run yet'}</div>
             </Link>
           );
         })}

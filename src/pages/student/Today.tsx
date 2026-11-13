@@ -6,17 +6,7 @@ import { programFor, resolveActivity, doneCount, assignedThrough } from '../../l
 import { streak } from '../../lib/stats';
 import { computeTypingGrade } from '../../lib/grades';
 import { getDrill } from '../../content';
-
-const BLOCK: { time: string; name: string; mins: string; built: boolean }[] = [
-  { time: '12:35', name: 'Warm-up sprint', mins: '10 min', built: true },
-  { time: '12:45', name: 'Today’s skill drill', mins: '35 min', built: true },
-  { time: '1:20', name: 'Dictation', mins: '25 min', built: false },
-  { time: '1:45', name: 'Stretch break', mins: '10 min', built: false },
-  { time: '1:55', name: 'Shift simulation', mins: '30 min', built: false },
-  { time: '2:25', name: 'Error hunt', mins: '25 min', built: false },
-  { time: '2:50', name: 'Chart entry forms', mins: '25 min', built: false },
-  { time: '3:15', name: 'Class challenge', mins: '15 min', built: false },
-];
+import { dailyPassageIndex, typingBlock } from '../../lib/typingBlock';
 
 export function Today() {
   const { me, attempts, settings, today, day, override } = useStudent();
@@ -99,14 +89,22 @@ export function Today() {
           {behind >= 2 && day > 1 && <div className="note note-warn">You have {behind} unfinished activities from earlier days. Tap an earlier day above to catch up.</div>}
           <Card title="The typing block" subtitle="12:35 to 3:30 · a new activity every 10 to 35 minutes">
             <div className="stack" style={{ gap: 6 }}>
-              {BLOCK.map((b) => (
-                <div key={b.time} className="row" style={{ fontSize: 14, gap: 10, flexWrap: 'nowrap' }}>
-                  <span className="num muted" style={{ width: 52 }}>{b.time}</span>
-                  <span style={{ flex: 1, fontWeight: 500 }}>{b.name}</span>
-                  <span className="muted num">{b.mins}</span>
-                  <Tag tone={b.built ? 'good' : 'info'}>{b.built ? 'Available' : 'Planned'}</Tag>
-                </div>
-              ))}
+              {typingBlock(me.track).map((b) => {
+                const drill = b.built && b.drillId ? getDrill(b.drillId) : undefined;
+                const to = drill ? `/practice?kind=drill&drill=${drill.id}&passage=${dailyPassageIndex(drill.items.length, current)}` : b.built ? b.to : undefined;
+                const row = (
+                  <>
+                    <span className="num muted" style={{ width: 52 }}>{b.time}</span>
+                    <span style={{ flex: 1, fontWeight: 500 }}>{b.name}</span>
+                    <span className="muted num">{b.mins}</span>
+                    <Tag tone={b.built ? 'good' : 'info'}>{b.built ? 'Available' : 'Planned'}</Tag>
+                  </>
+                );
+                const style = { fontSize: 14, gap: 10, flexWrap: 'nowrap' as const };
+                return to
+                  ? <Link key={b.time} className="row" style={{ ...style, textDecoration: 'none', color: 'inherit' }} to={to}>{row}</Link>
+                  : <div key={b.time} className="row" style={style}>{row}</div>;
+              })}
             </div>
           </Card>
         </div>
