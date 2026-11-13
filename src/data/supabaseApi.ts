@@ -314,8 +314,11 @@ export function createSupabaseApi(arg: { url: string; anonKey: string } | Supaba
       const { data, error } = await db.from('challenges').update({ status: 'ended' }).eq('id', id).select('id');
       if (error) fail('Could not end the challenge', error);
       if (!data?.length) {
-        const exists = await db.from('challenges').select('id').eq('id', id).maybeSingle();
+        const exists = await db.from('challenges').select('id, status').eq('id', id).maybeSingle();
         if (!exists.data) throw new Error('That round was not found.');
+        // Row-level security turns a forbidden update into "zero rows changed". A round that is still open after that
+        // was not ended by this caller (a student): say so, like the demo adapter does. An already-ended round is fine.
+        if (exists.data.status === 'open') throw new Error('Only the instructor who owns this class can end a round.');
       }
     },
     async getActiveChallenge(classId) {

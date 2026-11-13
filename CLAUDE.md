@@ -34,8 +34,14 @@ Typing trainer for a 2-week Medical Assistant (MA) and Pharmacy Tech (PT) typing
 3. **Generated content** from realistic templates (random fictional names, vitals in plausible ranges, sig combos, label fields) so students never run out or retype the same passage.
    - Built (phase 1): `src/content/generate/` plus `src/content/generated.ts`. Six drills on the "All drills" page: MA vitals, SOAP notes, phone messages; Rx labels, sig translator, Tall Man. Kept apart from the written drills, which progress and grades are keyed to. A run saves its **seed** in the attempt's `passage` field.
    - Adding a drug: add it to `rxCatalog.ts` **and** to `src/test/rxReference.ts` (real strengths, adult daily maximum). The two are written separately on purpose so a typo in one fails against the other.
-   - Not yet generated: error hunts, pharmacy workflow/claim notes, patient handouts. The sig translator has about 90 distinct prescriptions, so it repeats sooner than the others.
-4. **Movement/ergonomics breaks** between activities.
+   - Also generated (roadmap+): MA chart-from-memory drill, and error hunts for both tracks (`huntCore`/`huntMutators`).
+   - Not yet generated: pharmacy workflow/claim notes, patient handouts. The sig translator has about 90 distinct prescriptions, so it repeats sooner than the others.
+4. **Movement/ergonomics breaks** between activities. (Built: `/stretch`.)
+   - **Built on the `roadmap+` branch** (every row of the afternoon typing block is now live): chart entry forms `/forms`, shift simulation `/shift`, stretch break `/stretch`, class challenge `/challenge` (+ host `/challenge/host`, projector `/challenge/screen/:id`), dictation `/dictation` and flash cards `/flashcards` (both under "More activities" in All drills, dictation is opt-in and headphone-first).
+   - Student side: improvement card ("up X WPM since Day 1"), Day 10 certificate `/certificate`, weak-word report and sprint `/weak-words`, resume of an unfinished run, keyboard-only flow, Display menu (text size, dyslexia-friendly font, high contrast, reduced motion), offline save queue.
+   - Instructor side: class heatmap `/heatmap`, rolling-start view `/rolling`, at-risk flags, printable student report `/students/:id/report`, and per-class day plan (skip or reorder program days, "Adjust days" on Classes).
+   - **Supabase, verified locally (not on a hosted project):** migrations `0003_class_plan.sql` and `0004_challenge.sql` apply cleanly on top of 0001 and 0002; `supabase/tests/rls.sql` passes 82 of 82 checks; `supabaseApi.integration.test.ts` passes 10 of 10, now including real day-plan and challenge-round round trips. Not verified: a hosted Supabase project, Microsoft/Google sign-in, load.
+   - Known gaps: the instructor hub still assumes 10-day programs (a class that skips Day 10 shows its last day a day late); the Today day strip does not mark skipped days; the offline queue cannot fully prevent a double save without a client-generated id on attempts.
 5. Teacher-facing: easy way to collect results (currently a "Copy my result" button students paste into an assignment).
 
 ## Files

@@ -84,7 +84,10 @@ export function Challenge() {
   const isOpen = challenge?.status === 'open';
 
   let body: React.ReactNode;
-  if (!roundId) {
+  if (!roundId && active.data === undefined && !active.error) {
+    // The first check has not come back yet: do not claim there is no challenge.
+    body = <Card><p className="empty">Checking for an open challenge…</p></Card>;
+  } else if (!roundId) {
     body = <Card><p className="empty">No challenge is open right now. This page checks every couple of seconds, so stay here and it will appear when your instructor starts one.</p></Card>;
   } else if (!challenge) {
     body = <Card><p className="empty">Loading the challenge…</p></Card>;
