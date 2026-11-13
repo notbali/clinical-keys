@@ -30,6 +30,9 @@ const WINDOW: Record<string, string> = {
   'rx-gen-lasa': 'Drug Name Entry',
   'ma-form': 'Patient Registration and Intake',
   'rx-form': 'Prescription Order Entry',
+  'ma-gen-chart': 'Triage Intake Entry',
+  'ma-gen-hunt': 'Chart Review: Proofread',
+  'rx-gen-hunt': 'Pharmacist Check: Proofread',
   'ma-test': 'Typing Test',
   'rx-test': 'Typing Test',
 };

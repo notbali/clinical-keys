@@ -1,4 +1,7 @@
 import type { ISODate } from '../lib/dates';
+import { makeChartPassage } from './generate/maChart';
+import { makeMaHuntPassage } from './generate/huntMa';
+import { makeRxHuntPassage } from './generate/huntRx';
 import { makePhonePassage, makeSoapPassage, makeVitalsPassage } from './generate/maPassages';
 import { hashSeed, mulberry32, type Rng } from './generate/rng';
 import { makeLabelPassage, makeLasaPassage, makeSigPassage } from './generate/rxPassages';
@@ -22,6 +25,14 @@ export const GENERATED_DRILLS: GeneratedDrill[] = [
     blurb: 'Refill requests, reschedules and possible medication reactions, with new names, dates and times every time.',
     why: '<b>Why it matters:</b> Phone messages go straight to the provider. A wrong weekday, date or dose means another call and a delay in care.',
     make: makePhonePassage },
+  { id: 'ma-gen-chart', track: 'ma', mode: 'hidden', title: 'Chart It From Memory (Generated)',
+    blurb: 'The facts are in the scenario line; you type the chart entry in the standard format. Letters appear as you get them right.',
+    why: '<b>Why it matters:</b> Charting follows a fixed format so the next person can find a blood pressure, an allergy or a dose at a glance. Knowing the format by heart is what makes you fast and safe.',
+    make: makeChartPassage },
+  { id: 'ma-gen-hunt', track: 'ma', mode: 'hunt', title: 'Error Hunt: Clinic Notes (Generated)',
+    blurb: 'A new note every time, with three or four mistakes planted in it: numbers, units, spelling, the chart banner, allergies and unsafe abbreviations.',
+    why: '<b>Why it matters:</b> Catching a wrong number, a missing allergy or a name that does not match the chart before it reaches the provider is part of the job. Every note here is new, so you practice looking, not remembering.',
+    make: makeMaHuntPassage },
   { id: 'rx-gen-labels', track: 'rx', mode: 'copy', title: 'Prescription Labels (Generated)',
     blurb: 'A new multi-line label every time: patient, drug, quantity, directions, days supply and refills.',
     why: '<b>Why it matters:</b> The label is the last thing between the pharmacy and the patient. Check that the quantity, the directions and the days supply agree before you type.',
@@ -34,6 +45,10 @@ export const GENERATED_DRILLS: GeneratedDrill[] = [
     blurb: 'Different Tall Man pairs and groups every time, as pairs, in sentences and on shelf labels.',
     why: '<b>Why it matters:</b> Look-alike, sound-alike names cause dispensing errors. The capital letters mark where the names differ, so slow down and check letter by letter.',
     make: makeLasaPassage },
+  { id: 'rx-gen-hunt', track: 'rx', mode: 'hunt', title: 'Error Hunt: Pharmacist Check (Generated)',
+    blurb: 'Check a new label against its prescription every time, or a look-alike drug rule list. Three or four mistakes are planted.',
+    why: '<b>Why it matters:</b> The pharmacist check is the last line of defense, and it only works if the label is compared with the prescription field by field. A wrong quantity, an unsafe abbreviation or a lowercase look-alike name is easy to miss when you read quickly.',
+    make: makeRxHuntPassage },
 ];
 
 export const getGeneratedDrill = (id: string): GeneratedDrill | undefined => GENERATED_DRILLS.find((d) => d.id === id);

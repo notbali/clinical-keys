@@ -43,10 +43,10 @@ export function Drills() {
           const b = best(d.id);
           return (
             <Link key={d.id} to={`/practice?kind=drill&drill=${d.id}`} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div className="row row-between"><Tag tone={d.mode === 'hidden' ? 'warn' : 'neutral'}>{d.mode === 'hidden' ? 'Translate' : 'Copy'}</Tag><span className="muted" style={{ fontSize: 13 }}>New every time</span></div>
+              <div className="row row-between"><Tag tone={d.mode === 'hidden' ? 'warn' : d.mode === 'hunt' ? 'info' : 'neutral'}>{d.mode === 'hidden' ? (d.glossary ? 'Translate' : 'From memory') : d.mode === 'hunt' ? 'Proofread' : 'Copy'}</Tag><span className="muted" style={{ fontSize: 13 }}>New every time</span></div>
               <h2 className="card-title" style={{ marginTop: 8 }}>{d.title}</h2>
               <p className="muted" style={{ fontSize: 14.5, margin: '4px 0 10px' }}>{d.blurb}</p>
-              <div className="hint">{b ? <>Best: <b>{b.wpm} WPM</b> · {b.accuracy}%</> : 'No clean run yet'}</div>
+              <div className="hint">{d.mode === 'hunt' ? <>{cleared(d.id)} {cleared(d.id) === 1 ? 'note' : 'notes'} cleared</> : b ? <>Best: <b>{b.wpm} WPM</b> · {b.accuracy}%</> : 'No clean run yet'}</div>
             </Link>
           );
         })}
