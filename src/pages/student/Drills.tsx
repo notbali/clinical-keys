@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Tag } from '../../components/ui';
-import { drillsForTrack, SPRINT } from '../../content';
+import { libraryDrills, SPRINT } from '../../content';
 import { useStudent } from '../../components/Layouts';
 
 /** Every drill for the student's track, outside the 10-day program. Runs here are saved but do not count toward activity progress. */
@@ -18,7 +18,7 @@ export function Drills() {
           <p className="muted" style={{ fontSize: 14.5, margin: '4px 0 10px' }}>A fresh {SPRINT.limit}-second run of short, job-style lines.</p>
           <div className="hint">{bestSprint ? <>Best: <b>{bestSprint.wpm} WPM</b> · {bestSprint.accuracy}%</> : 'No clean run yet'}</div>
         </Link>
-        {drillsForTrack(me.track).map((d) => {
+        {libraryDrills(me.track).map((d) => {
           const b = best(d.id);
           return (
             <Link key={d.id} to={`/practice?kind=drill&drill=${d.id}&passage=0`} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>

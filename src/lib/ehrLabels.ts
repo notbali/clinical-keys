@@ -20,6 +20,8 @@ const WINDOW: Record<string, string> = {
   'rx-lasa-2': 'Drug Name Entry',
   'rx-daysupply': 'Prescription Label Entry',
   'rx-calls': 'Pharmacy Note',
+  'ma-test': 'Typing Test',
+  'rx-test': 'Typing Test',
 };
 
 export const windowTitle = (kind: 'sprint' | 'drill', drillId?: string): string =>

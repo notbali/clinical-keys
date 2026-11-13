@@ -101,5 +101,12 @@ export const maDrills: Drill[] = [
     {ctx:"A missed appointment. Check the weekday and the date.", text:"Pt did not arrive for the 2:00 p.m. appointment on Thursday, 11/12/2026. Called twice and left a voicemail with the callback number 555-0142. Rescheduled for Thursday, 11/19/2026 at 2:00 p.m."},
     {ctx:"A records request. Records only go out with a signed release.", text:"Release of information form signed 11/12/2026. Records from 01/2025 to 11/2026 faxed to Valley Orthopedics at 555-0173. Fax confirmation page scanned into the chart."},
     {ctx:"Passing on a result the provider has already reviewed. Identity comes first.", text:"Lab results reviewed by Dr. Nguyen: normal. Called the patient at 4:10 p.m. and verified name and date of birth before sharing. Patient voiced understanding. Annual follow-up due 11/2027."}
+  ]},
+{ id:"ma-test", track:"ma", mode:"copy", exam:true, title:"Typing Test",
+  blurb:"The program typing test. The same two passages on Day 1, Day 5 and Day 10, so you can see your own growth.",
+  why:"<b>Why it matters:</b> This test is the same every time on purpose. Your Day 1 result is your starting point, and Day 5 and Day 10 show how far accuracy and speed have come.",
+  items:[
+    {ctx:"<b>Typing test, part 1 of 2.</b> A SOAP note. Press <b>Enter</b> at the end of each section. Take your time: accuracy comes first.", text:"S: 52 y/o male c/o cough and nasal congestion x 4 days. Denies fever, chest pain, and shortness of breath. Taking no new medications.\nO: T 98.8 F, P 80, R 16, BP 126/80 mmHg, SpO2 98% on room air. Lungs clear to auscultation bilaterally. Throat mildly red.\nA: Upper respiratory infection.\nP: Fluids and rest. Return to clinic if symptoms last more than 10 days or if fever develops."},
+    {ctx:"<b>Typing test, part 2 of 2.</b> Names, dates, lab values and a refill request. Check every digit.", text:"Pt: Daniel Okoye, DOB 08/14/1990. Appt: Wednesday, 12/02/2026 at 10:30 a.m. with Dr. Nguyen. Labs: fasting glucose 96 mg/dL, total cholesterol 188 mg/dL, HDL 52 mg/dL. Refill request: metformin 500 mg, 1 tablet twice daily, #60. Pt callback number: 555-0126. Message routed to the provider for review."}
   ]}
 ];

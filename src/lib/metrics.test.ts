@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildMetrics } from './metrics';
-import { assignedThrough } from './program';
+import { assignedThrough, resolveActivity } from './program';
 import { DEFAULT_SETTINGS } from '../data/types';
 import { at, attempt, completeActivities, student } from '../test/fixtures';
 
@@ -35,10 +35,14 @@ describe('today count', () => {
     expect(build([student()], [soap(0), soap(1)])[0].todayDone).toBe(0);
     expect(build([student()], [soap(0), soap(1), soap(2)])[0].todayDone).toBe(1);
   });
-  it('ignores "coming soon" activities (Day 5 has only the sprint for MA)', () => {
+  it('counts the Day 5 mid-point test along with the sprint', () => {
     const d5 = build([student({ startDate: '2026-11-06' })])[0]; // Fri Nov 6 is Day 5 on Thu Nov 12
     expect(d5.day).toBe(5);
-    expect(d5.todayTotal).toBe(1);
+    expect(d5.todayTotal).toBe(2);
+  });
+  it('ignores activities marked "coming soon"', () => {
+    expect(resolveActivity({ type: 'drill', label: 'Planned drill', soon: true })).toEqual({ kind: 'soon', label: 'Planned drill' });
+    expect(resolveActivity({ type: 'test', id: 'ma-test', label: 'Planned test', soon: true }).kind).toBe('soon');
   });
 });
 
@@ -93,19 +97,19 @@ describe('flags', () => {
 
   describe('behind', () => {
     it('flags a student who is 3 or more activities short on Day 2 or later', () => {
-      // Day 4 MA: 8 real activities assigned through today.
+      // Day 4 MA: 9 real activities assigned through today.
       const m = build([student()])[0];
-      expect(m.flags.find((f) => f.kind === 'behind')).toMatchObject({ tone: 'bad', text: 'Behind: 8 activities unfinished' });
+      expect(m.flags.find((f) => f.kind === 'behind')).toMatchObject({ tone: 'bad', text: 'Behind: 9 activities unfinished' });
     });
     it('does not flag a student who is caught up on everything before today', () => {
-      // The 6 activities from Days 1 to 3 are done; today's 2 are not started: 2 short, under the limit of 3.
-      const done = completeActivities('s1', 'ma', 4, 6);
+      // The 7 activities from Days 1 to 3 are done; today's 2 are not started: 2 short, under the limit of 3.
+      const done = completeActivities('s1', 'ma', 4, 7);
       expect(flagKinds(build([student()], done)[0])).not.toContain('behind');
     });
     it('flags exactly at 3 short', () => {
-      const done = completeActivities('s1', 'ma', 4, 5);
+      const done = completeActivities('s1', 'ma', 4, 6);
       expect(flagKinds(build([student()], done)[0])).toContain('behind');
-      expect(assignedThrough('ma', 4).length - 5).toBe(3);
+      expect(assignedThrough('ma', 4).length - 6).toBe(3);
     });
     it('never flags on Day 1', () => {
       expect(flagKinds(build([student({ startDate: '2026-11-12' })])[0])).not.toContain('behind');

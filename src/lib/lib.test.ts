@@ -85,11 +85,11 @@ const attempt = (over: Partial<Attempt>): Attempt => ({
 });
 
 describe('typing grade', () => {
-  it('combines 97% accuracy, 29 of 35 WPM and 7 of 8 activities into a grade of 91', () => {
+  it('combines 97% accuracy, 29 of 35 WPM and 7 of 9 activities into a grade of 88', () => {
     const assigned = assignedThrough('ma', 4);
-    // Days 1 to 4 have 8 real activities (the tests are still "coming soon").
-    expect(assigned).toHaveLength(8);
-    // Complete 7 of the 8 (every passage clean) and leave the last one unfinished.
+    // Days 1 to 4 have 9 real activities (the sprints, the drills and the Day 1 baseline test).
+    expect(assigned).toHaveLength(9);
+    // Complete 7 of the 9 (every passage clean) and leave the last one unfinished.
     const attempts: Attempt[] = [];
     let t = 0;
     assigned.slice(0, 7).forEach((a) => {
@@ -98,11 +98,11 @@ describe('typing grade', () => {
       });
     });
     const g = computeTypingGrade({ attempts, track: 'ma', day: 4, settings: DEFAULT_SETTINGS });
-    expect(g.completion).toEqual({ done: 7, total: 8 });
+    expect(g.completion).toEqual({ done: 7, total: 9 });
     expect(g.accuracyScore).toBe(100);
     expect(g.speedScore).toBe(83);
-    expect(g.completionScore).toBe(88);
-    expect(g.computed).toBe(91);
+    expect(g.completionScore).toBe(78);
+    expect(g.computed).toBe(88);
   });
   it('has no grade before any runs, and shows an override instead of the computed value', () => {
     expect(computeTypingGrade({ attempts: [], track: 'ma', day: 1, settings: DEFAULT_SETTINGS }).total).toBeNull();
