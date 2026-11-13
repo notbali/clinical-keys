@@ -63,6 +63,7 @@ describe('speechScript: what the voice says for what the chart says', () => {
     expect(speechScript('Pt is a 37 y/o female c/o cough x 3 days')).toBe('patient is a thirty-seven year old female complains of cough for three days');
     expect(speechScript('Message for Dr. Patel:')).toBe('Message for Doctor Patel:');
     expect(speechScript('bowel/bladder')).toBe('bowel slash bladder');
+    expect(speechScript('Hemoglobin A1c ordered.')).toBe('Hemoglobin A one C ordered.');
   });
 
   it('labels the sections of a SOAP note', () => {
