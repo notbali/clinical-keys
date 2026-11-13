@@ -2,6 +2,8 @@ import { normalizeUsername, uniqueUsername, makeUsername } from '../lib/username
 import { todayISO } from '../lib/dates';
 import type { Api, EnrollRow, NewAttempt, Result, StudentPreview, StudentRecord } from './api';
 import { buildSeed } from './seed';
+import * as ch from './demoChallenge';
+import type { Challenge, ChallengeResult } from './challengeTypes';
 import {
   DEFAULT_SETTINGS,
   type Attempt, type AuditEntry, type ClassGroup, type Enrollment, type GradeOverride, type Note, type Session, type Settings, type Student,
@@ -18,6 +20,9 @@ interface DemoState {
   audit: AuditEntry[];
   settings: Settings;
   session: Session | null;
+  /** Class challenge rounds and results. Missing in state saved before the challenge existed. */
+  challenges?: Challenge[];
+  challengeResults?: ChallengeResult[];
 }
 
 export interface StorageLike {
@@ -182,6 +187,7 @@ export function createDemoApi(opts: { storage?: StorageLike; now?: () => Date } 
       s.attempts = s.attempts.filter((a) => !ids.has(a.studentId));
       s.notes = s.notes.filter((n) => !ids.has(n.studentId));
       s.overrides = s.overrides.filter((o) => !ids.has(o.studentId));
+      ch.dropClassChallenges(s, id);
       s.classes = s.classes.filter((x) => x.id !== id);
       log(s, 'class.delete', c.name, `Permanently deleted the class and ${ids.size} students`);
     }),
@@ -256,6 +262,13 @@ export function createDemoApi(opts: { storage?: StorageLike; now?: () => Date } 
       log(s, 'grade.override.clear', st ? `${st.firstName} ${st.lastName}` : studentId, 'Removed the override');
     }),
     listAudit: () => read((s) => { requireInstructor(s); return s.audit; }),
+
+    createChallenge: (classId, passages) => write((s) => ch.createChallenge(s, classId, passages, uid('chal'), now().toISOString())),
+    endChallenge: (id) => write((s) => ch.endChallenge(s, id, now().toISOString())),
+    getActiveChallenge: (classId) => read((s) => ch.getActiveChallenge(s, classId)),
+    getChallenge: (id) => read((s) => ch.getChallenge(s, id)),
+    submitChallengeResult: (challengeId, result) => write((s) => ch.submitChallengeResult(s, challengeId, result, uid('chres'), now().toISOString())),
+    listChallengeResults: (challengeId) => read((s) => ch.listChallengeResults(s, challengeId)),
   };
   return api;
 }

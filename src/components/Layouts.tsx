@@ -122,6 +122,7 @@ export function InstructorLayout() {
             <NavLink to="/heatmap" className={({ isActive }) => (isActive ? 'on' : '')}>Class heatmap</NavLink>
             <NavLink to="/rolling" className={({ isActive }) => (isActive ? 'on' : '')}>Rolling start</NavLink>
             <NavLink to="/classes" className={({ isActive }) => (isActive ? 'on' : '')}>Classes</NavLink>
+            <NavLink to="/challenge/host" className={({ isActive }) => (isActive ? 'on' : '')}>Class challenge</NavLink>
             <NavLink to="/settings" className={({ isActive }) => (isActive ? 'on' : '')}>Program &amp; settings</NavLink>
           </div>
           <div className="side-foot">

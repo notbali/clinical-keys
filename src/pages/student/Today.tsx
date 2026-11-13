@@ -8,6 +8,7 @@ import { programFor, resolveActivity, doneCount, assignedThrough } from '../../l
 import { streak } from '../../lib/stats';
 import { computeTypingGrade } from '../../lib/grades';
 import { getDrill } from '../../content';
+import { ChallengeBanner } from '../../components/ChallengeBanner';
 import { dailyPassageIndex, typingBlock } from '../../lib/typingBlock';
 
 export function Today() {
@@ -42,6 +43,8 @@ export function Today() {
         </div>
         <div className="card row" style={{ padding: '10px 16px' }}><span className="num" style={{ fontSize: 26, fontWeight: 700, color: 'var(--accent)' }}>{sk}</span><div style={{ fontSize: 14, lineHeight: 1.3 }}><b>day streak</b><br /><span className="muted">{sk ? 'Keep it going' : 'Finish a run to start one'}</span></div></div>
       </div>
+
+      <ChallengeBanner track={me.track} />
 
       <div className="days" role="group" aria-label="Your 10-day program">
         {program.map((d) => {
