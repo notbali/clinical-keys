@@ -28,6 +28,9 @@ const WINDOW: Record<string, string> = {
   'rx-gen-labels': 'Prescription Label Entry',
   'rx-gen-sig': 'Order Entry: Prescription Directions',
   'rx-gen-lasa': 'Drug Name Entry',
+  'ma-gen-chart': 'Triage Intake Entry',
+  'ma-gen-hunt': 'Chart Review: Proofread',
+  'rx-gen-hunt': 'Pharmacist Check: Proofread',
   'ma-test': 'Typing Test',
   'rx-test': 'Typing Test',
 };

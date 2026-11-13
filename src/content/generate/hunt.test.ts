@@ -46,7 +46,7 @@ for (const [id, make] of Object.entries(MAKERS)) {
         expect(p.errors!.length, where).toBeLessThanOrEqual(4);
         for (let i = 1; i < planted.length; i++) expect(planted[i].targetStart, where).toBeGreaterThanOrEqual(planted[i - 1].targetEnd);
         for (const e of planted) {
-          expect(e.fixed.split(' ').length + e.flawed.split(' ').length, `${where} each error stays inside a few words`).toBeLessThanOrEqual(6);
+          expect(e.fixed.split(' ').length + e.flawed.split(' ').length, `${where} each error stays inside its own few words (an allergy list can be a few words long)`).toBeLessThanOrEqual(8);
           expect(e.flawed === '' && e.fixed === '', where).toBe(false);
         }
         expect(p.ctx, where).toContain(`There are ${p.errors!.length} errors`);

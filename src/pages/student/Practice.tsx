@@ -107,7 +107,7 @@ export function Practice() {
   const title = kind === 'sprint' ? 'Warm-up Sprint' : drill!.title;
   const rx = me.track === 'rx';
   const hunt = drill?.mode === 'hunt';
-  const msg = result ? (hunt ? huntMessage(result) : messageFor(result, kind === 'sprint', drill?.mode === 'hidden')) : null;
+  const msg = result ? (hunt ? huntMessage(result) : messageFor(result, kind === 'sprint', drill?.mode === 'hidden' && rx)) : null;
   const pos = list.indexOf(passage) + 1;
   const where = kind === 'sprint' ? `${SPRINT.limit}-second sprint` : generated ? 'New every time' : `Passage ${pos} of ${list.length}`;
 
@@ -115,7 +115,7 @@ export function Practice() {
     <div className="scenario">
       <div dangerouslySetInnerHTML={{ __html: kind === 'sprint' ? SPRINT.intro : drill!.items[passage].ctx }} />
       <p className="muted" style={{ fontSize: 14, marginTop: 6 }}>
-        {kind === 'sprint' ? SPRINT.note : hunt ? 'Proofread the note. Edit the text to fix every error, then press Check my note. Stuck? Use a hint.' : drill!.mode === 'hidden' ? 'Type the label directions in full. Letters appear as you get them right, and red means wrong. Use the cheat sheet below if you’re stuck.' : 'Type it exactly as shown. Capitals, numbers, spacing and punctuation all count.'}
+        {kind === 'sprint' ? SPRINT.note : hunt ? 'Proofread the note. Edit the text to fix every error, then press Check my note. Stuck? Use a hint.' : drill!.mode === 'hidden' ? (drill!.glossary ? 'Type the label directions in full. Letters appear as you get them right, and red means wrong. Use the cheat sheet below if you’re stuck.' : 'Type the chart entry from the facts above, in the format the scenario gives. Letters appear as you get them right, and red means wrong.') : 'Type it exactly as shown. Capitals, numbers, spacing and punctuation all count.'}
       </p>
     </div>
   );
