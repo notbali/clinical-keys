@@ -9,6 +9,7 @@ import { programFor, resolveActivity } from '../../lib/program';
 import { TypingPlayer } from '../../typing/TypingPlayer';
 import { ErrorHuntPlayer } from '../../typing/ErrorHuntPlayer';
 import { PatientBanner } from '../../components/PatientBanner';
+import { WeakWords } from '../../components/WeakWords';
 import { windowTitle } from '../../lib/ehrLabels';
 import type { RunResult } from '../../typing/engine';
 import type { NewAttempt } from '../../data/api';
@@ -158,6 +159,7 @@ export function Practice() {
             <div><span>{hunt ? 'Hints' : 'WPM'}</span><b>{hunt ? result.peeks : result.wpm}</b></div><div><span>Accuracy</span><b>{result.accuracy}%</b></div>
             <div><span>Time</span><b>{mmss(result.seconds)}</b></div><div><span>Errors left</span><b>{result.errorsLeft}</b></div>
           </div>
+          <WeakWords result={result} />
           {saveError && <div style={{ marginBottom: 12 }}><ErrorNote>{saveError}</ErrorNote></div>}
           <div className="row">
             <Button variant="primary" onClick={goNext}>{kind === 'sprint' ? 'Another sprint →' : generated ? 'New passage →' : 'Next passage →'}</Button>

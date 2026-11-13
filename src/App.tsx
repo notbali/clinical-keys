@@ -8,6 +8,8 @@ import { Gradebook } from './pages/student/Gradebook';
 import { Drills } from './pages/student/Drills';
 import { Shift } from './pages/student/Shift';
 import { Stretch } from './pages/student/Stretch';
+import { Certificate } from './pages/student/Certificate';
+import { WeakSprint } from './pages/student/WeakSprint';
 import { InstructorSignIn } from './pages/instructor/SignIn';
 import { Hub } from './pages/instructor/Hub';
 import { Classes } from './pages/instructor/Classes';
@@ -38,6 +40,8 @@ export function App() {
         <Route path="/drills" element={<Drills />} />
         <Route path="/shift" element={<Shift />} />
         <Route path="/stretch" element={<Stretch />} />
+        <Route path="/certificate" element={<Certificate />} />
+        <Route path="/weak-words" element={<WeakSprint />} />
       </Route>
 
       <Route element={<RequireRole role="instructor"><InstructorLayout /></RequireRole>}>

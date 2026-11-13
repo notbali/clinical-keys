@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Card, ProgressBar, Stat, Tag, fmtDate, mmss } from '../../components/ui';
 import { LineChart } from '../../components/Charts';
+import { ImprovementCard } from '../../components/ImprovementCard';
+import { activityLabel, bestTimeline, drillKey } from '../../lib/progress';
 import { useStudent } from '../../components/Layouts';
 import { computeTypingGrade } from '../../lib/grades';
 import { assignedThrough, doneCount } from '../../lib/program';
@@ -26,6 +28,7 @@ export function Gradebook() {
   if (todo.length) work.push({ title: 'Finish what’s assigned', why: `${todo.length} activit${todo.length === 1 ? 'y is' : 'ies are'} unfinished through Day ${current}. Next up: ${todo[0].label} (Day ${todo[0].day}).`, to: '/today', cta: 'Open Today' });
   if (!work.length) work.push({ title: 'You’re on track', why: 'Keep your accuracy up and keep the streak going.', to: '/today', cta: 'Open Today' });
 
+  const timeline = bestTimeline(attempts);
   const recent = [...attempts].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 8);
 
   return (
@@ -60,6 +63,18 @@ export function Gradebook() {
 
       <div className="cols">
         <div className="col-main stack">
+          <Card title="Your personal bests over time" subtitle="Each time a clean run beat your earlier best. Only clean runs count: no errors left, 95% accuracy or better.">
+            {timeline.length === 0 ? <p className="empty">No clean runs yet. Finish one with no errors left and 95% accuracy or better.</p> : (
+              <div>
+                {timeline.map((line) => (
+                  <div key={line.key} style={{ padding: '10px 0', borderTop: '1px solid var(--line-soft)' }}>
+                    <div className="row row-between" style={{ alignItems: 'baseline' }}><b>{activityLabel(line.key)}</b><span className="num">Best {line.best} WPM</span></div>
+                    <div className="muted num" style={{ fontSize: 13.5 }}>{line.points.map((p) => `${p.wpm} (${fmtDate(p.at)})`).join(' → ')}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
           <Card title="How your typing grade is calculated" subtitle="Updated after every run. No surprises.">
             <div>
               {[
@@ -85,7 +100,7 @@ export function Gradebook() {
                 {recent.map((a) => (
                   <div className="tr cols-runs" key={a.id}>
                     <div className="muted" style={{ fontSize: 12.5 }}>{fmtDate(a.createdAt, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>
-                    <div>{a.kind === 'sprint' ? 'Warm-up sprint' : `${a.drillId} · passage ${a.passage + 1}`}</div>
+                    <div>{a.kind === 'sprint' ? activityLabel(drillKey(a)) : `${a.drillId} · passage ${a.passage + 1}`}</div>
                     <div><b>{a.wpm}</b></div><div><b>{a.accuracy}%</b></div><div>{a.errorsLeft}</div>
                     <div>{a.clean ? <Tag tone="good">Clean</Tag> : a.completed ? <Tag tone="warn">Fixed</Tag> : <Tag tone="bad">Errors left</Tag>}</div>
                   </div>
@@ -108,6 +123,7 @@ export function Gradebook() {
               ))}
             </div>
           </div>
+          <ImprovementCard />
           <Card title="Time on task">
             <div className="kv"><span>Typing time today</span><b className="num">{mmss(todaySec)}</b></div>
             <div className="kv"><span>Typing time in total</span><b className="num">{mmss(totalSeconds(attempts))}</b></div>
