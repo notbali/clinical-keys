@@ -188,9 +188,10 @@ function fakeApi() {
   };
 }
 
+let idCounter = 0; // shared across deps() calls, like a real id generator
 function deps(api: ReturnType<typeof fakeApi>, store: KeyValueStore, over: Partial<FlushDeps> = {}): FlushDeps {
-  let n = 0;
-  return { store, studentId: 'stu1', save: api.save, list: api.list, now: () => api.state.clock, owner: 'tab1', newId: () => `id${++n}`, ...over };
+  const n = () => ++idCounter;
+  return { store, studentId: 'stu1', save: api.save, list: api.list, now: () => api.state.clock, owner: 'tab1', newId: () => `id${n()}`, ...over };
 }
 
 describe('submitAttempt', () => {

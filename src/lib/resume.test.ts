@@ -55,7 +55,7 @@ describe('serialize and parse a run', () => {
     const raw = serializeRun(midRun(), { revealed: false, peeks: 2 }, T, 6000, NOW)!;
     const back = parseRun(raw, T, NOW + 60_000)!;
     expect(back.typed).toBe('Take 1 tablet b');
-    expect(back.keys).toBe(13 + 2 + 4);
+    expect(back.keys).toBe(13 + 4) // 13 keys to the typo, then 4 more after backspacing to 11 characters;
     expect(back.wrong).toBe(1);
     expect(back.peeks).toBe(2);
     expect(back.revealed).toBe(false);
