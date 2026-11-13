@@ -7,6 +7,8 @@ import { useRoster } from '../../data/useRoster';
 import { dateOfProgramDay } from '../../lib/dates';
 import { byProgramDay } from '../../lib/stats';
 import { getDrill } from '../../content';
+import { uncoveredFlags } from '../../lib/metrics';
+import '../../styles/insights.css';
 
 export function StudentRecordPage() {
   const { id = '' } = useParams();
@@ -62,14 +64,20 @@ export function StudentRecordPage() {
             </div>
           </div>
         </div>
-        <div className="row"><Button onClick={() => window.print()}>Print progress report</Button>
+        <div className="row"><Link to={`/students/${student.id}/report`} className="btn btn-secondary">Printable progress report</Link>
           {student.status === 'active'
             ? <Button variant="dark" onClick={() => void run(async () => { await api.exitStudent(student.id); }, `${fullName} was exited and archived.`)} busy={busy}>Exit and archive</Button>
             : <Button variant="dark" onClick={() => void run(() => api.restoreStudent(student.id), `${fullName} was restored.`)} busy={busy}>Restore student</Button>}
         </div>
       </div>
       {msg && <div className={`note note-${msg.tone}`} role="status">{msg.text}</div>}
-      {m.flags.length > 0 && <div className="row">{m.flags.map((f) => <Tag key={f.kind} tone={f.tone}>{f.text}</Tag>)}</div>}
+      {m.risk.length > 0 && (
+        <div className="note note-warn" role="note">
+          <b>At risk</b>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20 }}>{m.risk.map((r) => <li key={r.kind}>{r.text}</li>)}</ul>
+        </div>
+      )}
+      {uncoveredFlags(m).length > 0 && <div className="row">{uncoveredFlags(m).map((f) => <Tag key={f.kind} tone={f.tone}>{f.text}</Tag>)}</div>}
 
       <div className="grid-tiles">
         <Stat label="Typing grade" value={grade.total == null ? '—' : `${grade.total}%`} note={grade.override ? 'Set by you' : 'Automatic, live'} tone="info" />

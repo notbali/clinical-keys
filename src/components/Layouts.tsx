@@ -119,6 +119,8 @@ export function InstructorLayout() {
           <Link to="/hub" className="brand" style={{ textDecoration: 'none', color: 'inherit' }}><span className="mark" aria-hidden="true">Rx</span>Clinical Keys</Link>
           <div className="side-nav">
             <NavLink to="/hub" className={({ isActive }) => (isActive ? 'on' : '')}>Today’s room</NavLink>
+            <NavLink to="/heatmap" className={({ isActive }) => (isActive ? 'on' : '')}>Class heatmap</NavLink>
+            <NavLink to="/rolling" className={({ isActive }) => (isActive ? 'on' : '')}>Rolling start</NavLink>
             <NavLink to="/classes" className={({ isActive }) => (isActive ? 'on' : '')}>Classes</NavLink>
             <NavLink to="/settings" className={({ isActive }) => (isActive ? 'on' : '')}>Program &amp; settings</NavLink>
           </div>

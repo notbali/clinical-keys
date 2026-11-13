@@ -4,7 +4,8 @@ import { Button, Card, ProgressBar, Stat, Tag, TrackTag, ago, pct } from '../../
 import { useRoster } from '../../data/useRoster';
 import { download, gradesCsv } from '../../lib/exports';
 import { todayISO } from '../../lib/dates';
-import type { StudentMetrics } from '../../lib/metrics';
+import '../../styles/insights.css';
+import { attentionReasons, needsAttention, uncoveredFlags, type StudentMetrics } from '../../lib/metrics';
 
 const GROUPS: { title: string; test: (d: number) => boolean }[] = [
   { title: 'Day 9 and up · finishing', test: (d) => d >= 9 },
@@ -24,7 +25,7 @@ export function Hub() {
     return {
       count: active.length, ma: active.filter((m) => m.student.track === 'ma').length,
       wpm: avg((m) => m.latestWpm!), acc: avg((m) => m.latestAccuracy!),
-      attention: active.filter((m) => m.flags.some((f) => f.kind === 'accuracy' || f.kind === 'behind')),
+      attention: active.filter(needsAttention),
       exiting: active.filter((m) => m.day >= 10),
     };
   }, [active]);
@@ -48,6 +49,8 @@ export function Hub() {
           <label className="visually-hidden" htmlFor="q">Search students</label>
           <input id="q" name="search" type="search" autoComplete="off" spellCheck={false} className="input search" placeholder="Search students…" value={q} onChange={(e) => setQ(e.target.value)} />
           <Button onClick={() => download(`typing-grades-${todayISO()}.csv`, gradesCsv(active))} disabled={!active.length}>Export for Blackboard</Button>
+          <Link to="/heatmap" className="btn btn-secondary">Class heatmap</Link>
+          <Link to="/rolling" className="btn btn-secondary">Rolling start</Link>
           <Link to="/classes" className="btn btn-dark">+ Add students</Link>
         </div>
       </div>
@@ -80,7 +83,9 @@ export function Hub() {
                         <div className="cell-name">
                           <Link to={`/students/${m.student.id}`} translate="no">{m.student.firstName} {m.student.lastName}</Link>
                           <div className="cell-sub" translate="no">{m.student.username}</div>
-                          {m.flags.map((f) => <div key={f.kind} className="cell-flag" style={{ color: f.tone === 'bad' ? 'var(--bad)' : f.tone === 'warn' ? 'var(--warn)' : 'var(--link)' }}>{f.text}</div>)}
+                          {m.risk.length > 0 && <div style={{ marginTop: 2 }}><Tag tone="bad">At risk</Tag></div>}
+                          {m.risk.map((r) => <div key={r.kind} className="risk-line">{r.text}</div>)}
+                          {uncoveredFlags(m).map((f) => <div key={f.kind} className="cell-flag" style={{ color: f.tone === 'bad' ? 'var(--bad)' : f.tone === 'warn' ? 'var(--warn)' : 'var(--link)' }}>{f.text}</div>)}
                         </div>
                         <div><TrackTag track={m.student.track} /></div>
                         <div><div style={{ fontSize: 13, fontWeight: 600 }}>Day {Math.min(Math.max(m.day, 1), 10)} of 10</div><ProgressBar value={Math.min(m.day, 10) * 10} tone="ink" label={`Program day ${m.day}`} /></div>
@@ -104,9 +109,9 @@ export function Hub() {
             {kpi.attention.length === 0 ? <p className="empty">Nobody is flagged right now.</p> : (
               <div className="stack" style={{ gap: 10 }}>
                 {kpi.attention.map((m) => (
-                  <div key={m.student.id} style={{ border: '1px solid var(--line-soft)', borderLeft: `5px solid ${m.flags[0].tone === 'bad' ? 'var(--bad)' : 'var(--warn)'}`, borderRadius: 8, padding: '10px 14px' }}>
+                  <div key={m.student.id} style={{ border: '1px solid var(--line-soft)', borderLeft: `5px solid ${m.risk.length || m.flags[0]?.tone === 'bad' ? 'var(--bad)' : 'var(--warn)'}`, borderRadius: 8, padding: '10px 14px' }}>
                     <div className="row row-between"><Link to={`/students/${m.student.id}`} style={{ fontWeight: 700, color: 'var(--ink)', textDecoration: 'none' }}>{m.student.firstName} {m.student.lastName}</Link><span className="muted" style={{ fontSize: 12 }}>Day {Math.min(Math.max(m.day, 1), 10)} · {m.student.track === 'ma' ? 'MA' : 'PT'}</span></div>
-                    {m.flags.filter((f) => f.kind !== 'exit' && f.kind !== 'new').map((f) => <div key={f.kind} style={{ fontSize: 13.5 }} className="muted">{f.text}</div>)}
+                    {attentionReasons(m).map((t) => <div key={t} style={{ fontSize: 13.5 }} className="muted">{t}</div>)}
                     <Link to={`/students/${m.student.id}`} style={{ fontSize: 13, fontWeight: 600 }}>Open record →</Link>
                   </div>
                 ))}
