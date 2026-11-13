@@ -2,6 +2,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { todayISO } from '../lib/dates';
 import { makeUsername, normalizeUsername, uniqueUsername } from '../lib/username';
 import type { Api, EnrollRow, NewAttempt, Result, StudentPreview, StudentRecord } from './api';
+import type { Challenge, ChallengePassages, ChallengeResult } from './challengeTypes';
+import { validateNewChallenge, validateResult } from '../lib/challenge';
 import {
   DEFAULT_SETTINGS,
   type Attempt, type AuditEntry, type ClassGroup, type Enrollment, type GradeOverride, type Note, type Session, type Settings, type Student,
@@ -28,6 +30,14 @@ const toAttempt = (r: AttemptRow): Attempt => ({
   id: r.id, studentId: r.student_id, kind: r.kind, track: r.track, drillId: r.drill_id ?? undefined, passage: r.passage,
   day: r.day ?? undefined, act: r.act ?? undefined, wpm: r.wpm, accuracy: Number(r.accuracy), errorsLeft: r.errors_left, seconds: r.seconds,
   completed: r.completed, clean: r.clean, revealed: r.revealed, createdAt: r.created_at,
+});
+
+interface ChallengeRow { id: string; class_id: string; status: 'open' | 'ended'; passages: ChallengePassages; created_at: string; ended_at: string | null }
+interface ChallengeResultRow { id: string; challenge_id: string; student_id: string; display_name: string; track: 'ma' | 'rx'; wpm: number; accuracy: number | string; errors_left: number; seconds: number; revealed: boolean; clean: boolean; submitted_at: string }
+const toChallenge = (r: ChallengeRow): Challenge => ({ id: r.id, classId: r.class_id, status: r.status, passages: r.passages ?? {}, createdAt: r.created_at, endedAt: r.ended_at ?? undefined });
+const toChallengeResult = (r: ChallengeResultRow): ChallengeResult => ({
+  id: r.id, challengeId: r.challenge_id, studentId: r.student_id, displayName: r.display_name, track: r.track, wpm: r.wpm, accuracy: Number(r.accuracy),
+  errorsLeft: r.errors_left, seconds: r.seconds, revealed: r.revealed, clean: r.clean, submittedAt: r.submitted_at,
 });
 
 const PAGE = 1000;
@@ -286,6 +296,57 @@ export function createSupabaseApi(arg: { url: string; anonKey: string } | Supaba
       const { data, error } = await db.from('audit_log').select('*').order('created_at', { ascending: false }).limit(200);
       if (error) fail('Could not load the change log', error);
       return (data ?? []).map((a) => ({ id: a.id, at: a.created_at, actor: 'Instructor', action: a.action, subject: a.subject, detail: a.detail }));
+    },
+
+    // Class challenge. UNTESTED against a real database (migration 0004). Row-level security limits who can read and write.
+    async createChallenge(classId, passages) {
+      const bad = validateNewChallenge(passages);
+      if (bad) throw new Error(bad);
+      // One open round per class (a partial unique index enforces it): end the old one first.
+      const ended = await db.from('challenges').update({ status: 'ended' }).eq('class_id', classId).eq('status', 'open');
+      if (ended.error) fail('Could not end the earlier round', ended.error);
+      const { data, error } = await db.from('challenges').insert({ class_id: classId, passages }).select().single();
+      if (error || !data) fail('Could not open the challenge', error);
+      return toChallenge(data as ChallengeRow);
+    },
+    async endChallenge(id) {
+      const { data, error } = await db.from('challenges').update({ status: 'ended' }).eq('id', id).select('id');
+      if (error) fail('Could not end the challenge', error);
+      if (!data?.length) {
+        const exists = await db.from('challenges').select('id').eq('id', id).maybeSingle();
+        if (!exists.data) throw new Error('That round was not found.');
+      }
+    },
+    async getActiveChallenge(classId) {
+      // A student's rows are already limited to their own class by row-level security.
+      let q = db.from('challenges').select('*').eq('status', 'open').order('created_at', { ascending: false }).limit(1);
+      if (classId) q = q.eq('class_id', classId);
+      const { data, error } = await q;
+      if (error) fail('Could not check for a challenge', error);
+      return data?.length ? toChallenge(data[0] as ChallengeRow) : null;
+    },
+    async getChallenge(id) {
+      const { data, error } = await db.from('challenges').select('*').eq('id', id).maybeSingle();
+      if (error) fail('Could not load the challenge', error);
+      return data ? toChallenge(data as ChallengeRow) : null;
+    },
+    async submitChallengeResult(challengeId, r) {
+      const bad = validateResult(r);
+      if (bad) throw new Error(bad);
+      // The database stamps the student, name, track, clean flag and time; the columns are required, so send placeholders.
+      const { data, error } = await db.from('challenge_results').insert({
+        challenge_id: challengeId, wpm: r.wpm, accuracy: r.accuracy, errors_left: r.errorsLeft, seconds: r.seconds, revealed: r.revealed,
+        student_id: '00000000-0000-0000-0000-000000000000', display_name: '-', track: 'ma', clean: false,
+      }).select().single();
+      if (error || !data) {
+        if (error?.code === '23505') throw new Error('You already submitted a result for this round.');
+        fail('Could not submit your result', error);
+      }
+      return toChallengeResult(data as ChallengeResultRow);
+    },
+    async listChallengeResults(challengeId) {
+      const rows = await all<ChallengeResultRow>((from, to) => db.from('challenge_results').select('*').eq('challenge_id', challengeId).order('submitted_at', { ascending: true }).range(from, to), 'challenge results');
+      return rows.map(toChallengeResult);
     },
   };
   return api;

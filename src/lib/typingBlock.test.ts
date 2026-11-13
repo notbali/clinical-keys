@@ -22,23 +22,24 @@ describe('the typing block schedule', () => {
     for (const track of ['ma', 'rx'] as const) expect(typingBlock(track).map((r) => r.name.toLowerCase()).join(' ')).not.toMatch(/dictation|listen|audio/);
   });
 
-  it('marks the sprint, the skill drill, the error hunt and the practice library as available, and the rest as planned', () => {
+  it('marks the sprint, the skill drill, the error hunt, the practice library and the class challenge as available, and the rest as planned', () => {
     for (const track of ['ma', 'rx'] as const) {
       expect(typingBlock(track).map((r) => [r.name, r.built])).toEqual([
         ['Warm-up sprint', true], ['Today’s skill drill', true], ['Error hunt', true], ['Stretch break', false],
-        ['Shift simulation', false], ['Practice library', true], ['Chart entry forms', false], ['Class challenge', false],
+        ['Shift simulation', false], ['Practice library', true], ['Chart entry forms', false], ['Class challenge', true],
       ]);
     }
   });
 
-  it('sends the error hunt row to that track’s own hunt drill, and the practice library row to the library', () => {
+  it('sends the error hunt row to that track’s own hunt drill, the practice library row to the library and the class challenge row to the challenge', () => {
     for (const track of ['ma', 'rx'] as const) {
       const rows = typingBlock(track);
       const hunt = rows.find((r) => r.name === 'Error hunt')!;
       expect(hunt.drillId).toBe(`${track}-hunt`);
       expect(getDrill(hunt.drillId!)).toMatchObject({ track, mode: 'hunt' });
       expect(rows.find((r) => r.name === 'Practice library')!.to).toBe('/drills');
-      expect(rows.filter((r) => r.drillId || r.to).map((r) => r.name)).toEqual(['Error hunt', 'Practice library']);
+      expect(rows.find((r) => r.name === 'Class challenge')!.to).toBe('/challenge');
+      expect(rows.filter((r) => r.drillId || r.to).map((r) => r.name)).toEqual(['Error hunt', 'Practice library', 'Class challenge']);
     }
   });
 });

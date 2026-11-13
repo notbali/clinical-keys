@@ -1,5 +1,6 @@
 import type { ISODate } from '../lib/dates';
 import type { Track } from '../content/types';
+import type { Challenge, ChallengePassages, ChallengeResult, NewChallengeResult } from './challengeTypes';
 import type { Attempt, AuditEntry, ClassGroup, Enrollment, GradeOverride, Note, Session, Settings, Student } from './types';
 
 /** A student together with their (latest) enrollment, which drives "Day N". */
@@ -69,4 +70,18 @@ export interface Api {
   setOverride(studentId: string, value: number, reason: string): Promise<void>;
   clearOverride(studentId: string): Promise<void>;
   listAudit(): Promise<AuditEntry[]>;
+
+  // Class challenge: a live round where a class types the same generated passage and a projector shows the leaderboard.
+  /** Instructor: opens a round for a class. Any round of that class that is still open is ended. */
+  createChallenge(classId: string, passages: ChallengePassages): Promise<Challenge>;
+  /** Instructor: ends a round (ending it again does nothing). */
+  endChallenge(id: string): Promise<void>;
+  /** The open round of a class, or null. An instructor names the class; a student always gets their own class's. */
+  getActiveChallenge(classId?: string): Promise<Challenge | null>;
+  /** One round by id, or null. A student sees only their own class's rounds. */
+  getChallenge(id: string): Promise<Challenge | null>;
+  /** Student: submits their one result in an open round of their class. */
+  submitChallengeResult(challengeId: string, result: NewChallengeResult): Promise<ChallengeResult>;
+  /** Everyone's results in a round (an instructor's, or the student's classmates'). Names are first name and last initial only. */
+  listChallengeResults(challengeId: string): Promise<ChallengeResult[]>;
 }
