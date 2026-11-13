@@ -195,3 +195,18 @@ h1, h2, h3, p { margin: 0; }
   .main { padding: 24px 16px 48px; }
 }
 @media (prefers-reduced-motion: reduce) { .typebox.focused .ch.cur { animation: none; } }
+
+/* Error hunt: edit the note until it is right. */
+.hunt-input { width: 100%; min-height: 200px; resize: vertical; font-family: var(--font-mono); font-size: clamp(1.02rem, 2.3vw, 1.28rem); line-height: 1.7; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.hunt-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.hunt-input[readonly] { background: var(--accent-tint); }
+.dx-box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.dx-box h3 { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+.hunt-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.hunt-list li { padding-left: 10px; border-left: 4px solid var(--line); }
+.hunt-list li.ok { border-left-color: var(--good); }
+.hunt-list li.ok > b { color: var(--good-ink); }
+.hunt-list li.miss { border-left-color: var(--bad); }
+.hunt-list li.miss > b { color: var(--bad-ink); }
+.hunt-change { font-family: var(--font-mono); font-size: 0.95em; }
+.hunt-change s { color: var(--bad-ink); }

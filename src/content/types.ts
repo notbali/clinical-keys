@@ -1,5 +1,12 @@
 export type Track = 'ma' | 'rx';
-export type DrillMode = 'copy' | 'hidden';
+/** copy: type what you see. hidden: type the answer to a prompt. hunt: find and fix the planted errors in a note. */
+export type DrillMode = 'copy' | 'hidden' | 'hunt';
+
+/** What kind of mistake was planted in an error hunt. */
+export type HuntCategory = 'number' | 'unit' | 'spelling' | 'patient' | 'allergy' | 'tall-man' | 'do-not-use' | 'logic';
+
+/** One planted mistake: shown to the student after they check their work. */
+export interface HuntError { category: HuntCategory; why: string }
 
 /** A fictional patient, shown in the chart banner above a passage. Must agree with the passage text (see patients.test.ts). */
 export interface Patient {
@@ -18,7 +25,16 @@ export interface Patient {
 }
 
 /** One passage inside a drill. `ctx` is our own trusted HTML shown above the passage. */
-export interface Passage { ctx: string; text: string; patient?: Patient }
+export interface Passage {
+  ctx: string;
+  /** What the student types or, in an error hunt, the correct note. */
+  text: string;
+  /** Error hunt only: the same note with mistakes planted in it. This is what the student edits. */
+  flawed?: string;
+  /** Error hunt only: one entry per planted mistake, in the order they appear in the note. */
+  errors?: HuntError[];
+  patient?: Patient;
+}
 
 export interface Drill {
   id: string;
