@@ -32,6 +32,9 @@ Typing trainer for a 2-week Medical Assistant (MA) and Pharmacy Tech (PT) typing
 2. **Daily 3-hour rotation** (change activity every 20–30 min):
    warm-up sprint (1-min timed tests) → today's skill → dictation (browser speechSynthesis reads a note aloud; student types it) → break → shift simulation (timed queue of mixed tasks, points for accuracy) → error hunt (find/fix planted errors in a note or label) → EHR-style data-entry forms (Tab between fields) → class challenge (projector-friendly).
 3. **Generated content** from realistic templates (random fictional names, vitals in plausible ranges, sig combos, label fields) so students never run out or retype the same passage.
+   - Built (phase 1): `src/content/generate/` plus `src/content/generated.ts`. Six drills on the "All drills" page: MA vitals, SOAP notes, phone messages; Rx labels, sig translator, Tall Man. Kept apart from the written drills, which progress and grades are keyed to. A run saves its **seed** in the attempt's `passage` field.
+   - Adding a drug: add it to `rxCatalog.ts` **and** to `src/test/rxReference.ts` (real strengths, adult daily maximum). The two are written separately on purpose so a typo in one fails against the other.
+   - Not yet generated: error hunts, pharmacy workflow/claim notes, patient handouts. The sig translator has about 90 distinct prescriptions, so it repeats sooner than the others.
 4. **Movement/ergonomics breaks** between activities.
 5. Teacher-facing: easy way to collect results (currently a "Copy my result" button students paste into an assignment).
 

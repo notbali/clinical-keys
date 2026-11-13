@@ -8,6 +8,7 @@ export const drillsForTrack = (track: Track): Drill[] => DRILLS.filter((d) => d.
 /** What the "All drills" page lists: practice drills only, never the program typing tests. */
 export const libraryDrills = (track: Track): Drill[] => drillsForTrack(track).filter((d) => !d.exam);
 export { PROGRAM } from './program';
+export { GENERATED_DRILLS, generatePassage, generatedDrillsForTrack, getGeneratedDrill, newSeed, parseSeed, resolveGeneratedDrill } from './generated';
 export { SPRINT } from './sprint';
 export { GLOSSARY } from './glossary';
 export type * from './types';
