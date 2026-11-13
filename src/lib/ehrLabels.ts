@@ -22,6 +22,12 @@ const WINDOW: Record<string, string> = {
   'rx-calls': 'Pharmacy Note',
   'ma-hunt': 'Chart Review: Proofread',
   'rx-hunt': 'Pharmacist Check: Proofread',
+  'ma-gen-vitals': 'Vitals Flowsheet Entry',
+  'ma-gen-soap': 'Progress Note (SOAP)',
+  'ma-gen-phone': 'Telephone Encounter',
+  'rx-gen-labels': 'Prescription Label Entry',
+  'rx-gen-sig': 'Order Entry: Prescription Directions',
+  'rx-gen-lasa': 'Drug Name Entry',
   'ma-test': 'Typing Test',
   'rx-test': 'Typing Test',
 };

@@ -1,3 +1,6 @@
+import type { ISODate } from '../lib/dates';
+import type { Rng } from './generate/rng';
+
 export type Track = 'ma' | 'rx';
 /** copy: type what you see. hidden: type the answer to a prompt. hunt: find and fix the planted errors in a note. */
 export type DrillMode = 'copy' | 'hidden' | 'hunt';
@@ -48,6 +51,17 @@ export interface Drill {
   /** A program typing test. Shown only through the program, never in the practice library. */
   exam?: boolean;
   items: Passage[];
+}
+
+/**
+ * A drill whose passages are made fresh from a seed instead of written by hand (src/content/generate). It lives apart from
+ * `Drill` on purpose: progress and grades are keyed by drill id and passage index, and a generated passage has no index.
+ * A run saves the seed in the attempt's `passage` field, so the same passage can be rebuilt later.
+ */
+export interface GeneratedDrill extends Omit<Drill, 'items' | 'exam' | 'mode'> {
+  mode: 'copy' | 'hidden';
+  /** Builds one passage. The same Rng and chart date always give the same passage. */
+  make: (rng: Rng, today: ISODate) => Passage;
 }
 
 export interface Activity {
