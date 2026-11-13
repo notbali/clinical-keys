@@ -84,6 +84,17 @@ export function assignedDays(plan: ClassPlan | null | undefined, throughDay: num
   return at >= 0 ? days.slice(0, at + 1) : days.filter((d) => d <= throughDay);
 }
 
+/**
+ * The plan the student screens grade against, for a student on their `position`-th school day. `undefined` for the
+ * default plan, so those students run exactly the old code path. The student screens cap the day at 10 before asking
+ * what is assigned, so once a student is past the end the days are listed in number order: "through Day 10" then
+ * covers every taught day, whatever order they were taught in.
+ */
+export function planForStudent(plan: ClassPlan | null | undefined, position: number): ClassPlan | undefined {
+  if (!plan || isDefaultPlan(plan)) return undefined;
+  return position > plan.days.length ? { days: [...plan.days].sort((a, b) => a - b) } : { days: [...plan.days] };
+}
+
 /* ---- Editing helpers (pure; the instructor screen and tests use these) ---- */
 
 /** Moves a taught day one place earlier (-1) or later (1). No change at the ends or for a skipped day. */

@@ -4,6 +4,7 @@ import { useApi, useAsync, useSession } from '../data/context';
 import type { StudentRecord } from '../data/api';
 import type { Attempt, GradeOverride, Settings } from '../data/types';
 import { programDay, todayISO, type ISODate } from '../lib/dates';
+import { defaultPlan, effectiveDay, planForStudent, type WithPlan } from '../lib/plan';
 import { ErrorNote, TopLink } from './ui';
 
 export function DemoBanner() {
@@ -23,12 +24,13 @@ export function RequireRole({ role, children }: { role: 'student' | 'instructor'
 export interface StudentCtx {
   me: StudentRecord;
   attempts: Attempt[];
-  settings: Settings;
+  /** The settings, plus `classPlan` when the student's class has a non-default day plan (pass it on to grading). */
+  settings: Settings & WithPlan;
   override?: GradeOverride;
   today: ISODate;
   /** True when the student screens use the training EHR look. */
   ehr: boolean;
-  /** Raw program day, 0 if the start date is in the future. */
+  /** The original program day to show today (the class day plan applied), 0 if the start date is in the future, above 10 once finished. */
   day: number;
   reload: () => void;
 }
@@ -39,7 +41,9 @@ export function StudentLayout() {
   const { settings, signOut } = useSession();
   const loaded = useAsync(async () => {
     const [me, attempts, overrides] = await Promise.all([api.getMe(), api.listAttempts(), api.listOverrides()]);
-    return { me, attempts, override: overrides[0] };
+    // The class day plan; a student without one (or if it cannot be loaded) follows Day 1 to Day 10.
+    const plan = me.classId ? await api.getClassPlan(me.classId).catch(() => defaultPlan()) : defaultPlan();
+    return { me, attempts, override: overrides[0], plan };
   }, [api]);
 
   const track = loaded.data?.me.track ?? 'ma';
@@ -52,10 +56,11 @@ export function StudentLayout() {
 
   if (loaded.error) return <div className="page"><ErrorNote>{loaded.error}</ErrorNote></div>;
   if (!loaded.data) return <p className="empty" style={{ padding: 24 }}>Loading…</p>;
-  const { me, attempts, override } = loaded.data;
+  const { me, attempts, override, plan } = loaded.data;
   const today = todayISO();
-  const day = me.enrollment ? programDay(me.enrollment.startDate, today, new Set(settings.closedDays)) : 1;
-  const ctx: StudentCtx = { me, attempts, settings, override, today, ehr, day, reload: loaded.reload };
+  const position = me.enrollment ? programDay(me.enrollment.startDate, today, new Set(settings.closedDays)) : 1;
+  const day = effectiveDay(plan, position);
+  const ctx: StudentCtx = { me, attempts, settings: { ...settings, classPlan: planForStudent(plan, position) }, override, today, ehr, day, reload: loaded.reload };
 
   if (ehr) {
     const stamp = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());

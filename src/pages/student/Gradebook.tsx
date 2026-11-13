@@ -19,7 +19,7 @@ export function Gradebook() {
   const today = todayISO();
   const todaySec = totalSeconds(attempts.filter((a) => todayISO(new Date(a.createdAt)) === today));
 
-  const todo = assignedThrough(me.track, current).filter((a) => doneCount(attempts, a.day, a.act, a.passages) < a.passages.length);
+  const todo = assignedThrough(me.track, current, settings.classPlan).filter((a) => doneCount(attempts, a.day, a.act, a.passages) < a.passages.length);
   const work: { title: string; why: string; to: string; cta: string }[] = [];
   if (g.accuracyAvg != null && g.accuracyAvg < target.accuracy) work.push({ title: 'Accuracy first', why: `Your last finished runs average ${g.accuracyAvg}%, under the ${target.accuracy}% target. Slow down a little: fewer corrections makes you faster.`, to: '/today', cta: 'Go to today’s activities' });
   if (g.bestWpm != null && g.bestWpm < target.wpm) work.push({ title: 'Build speed', why: `You’re ${target.wpm - g.bestWpm} WPM below the ${target.wpm} WPM target. Extra warm-up sprints are the fastest way to close it.`, to: '/practice?kind=sprint', cta: 'Start a warm-up sprint' });

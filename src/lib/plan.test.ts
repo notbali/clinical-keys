@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  assignedDays, defaultPlan, effectiveDay, isAssigned, isDefaultPlan, moveDay, normalizePlan, positionOfDay, programLength,
+  assignedDays, defaultPlan, effectiveDay, isAssigned, isDefaultPlan, moveDay, normalizePlan, planForStudent, positionOfDay, programLength,
   restoreDay, skipDay, skippedDays, taughtDays, validatePlan, type ClassPlan,
 } from './plan';
 import { programDay } from './dates';
@@ -159,6 +159,28 @@ describe('assignedDays: which original days count through a day', () => {
   });
   it('is empty before Day 1', () => {
     expect(assignedDays(SKIP3, 0)).toEqual([]);
+  });
+});
+
+describe('planForStudent (what the student screens grade against)', () => {
+  it('is undefined for no plan or the default plan, so those students run the old path', () => {
+    expect(planForStudent(undefined, 3)).toBeUndefined();
+    expect(planForStudent(defaultPlan(), 3)).toBeUndefined();
+    expect(planForStudent(defaultPlan(), 14)).toBeUndefined();
+  });
+  it('is the plan itself while the student is in the program', () => {
+    expect(planForStudent(SWAP45, 3)).toEqual(SWAP45);
+    expect(planForStudent(SWAP45, 0)).toEqual(SWAP45);
+  });
+  it('assigns every taught day, even through the screens\' Day 10 cap, once the student is past the end', () => {
+    const view = planForStudent(plan(1, 2, 3, 4, 5, 6, 7, 8, 10, 9), 11);
+    expect(assignedDays(view, 10)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(assignedDays(planForStudent(SKIP3, 10), 10)).toEqual([1, 2, 4, 5, 6, 7, 8, 9, 10]);
+  });
+  it('does not change the plan it was given', () => {
+    const p = plan(3, 1, 2);
+    planForStudent(p, 9);
+    expect(p.days).toEqual([3, 1, 2]);
   });
 });
 
