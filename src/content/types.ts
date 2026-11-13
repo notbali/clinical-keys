@@ -59,7 +59,7 @@ export interface Drill {
  * A run saves the seed in the attempt's `passage` field, so the same passage can be rebuilt later.
  */
 export interface GeneratedDrill extends Omit<Drill, 'items' | 'exam' | 'mode'> {
-  mode: 'copy' | 'hidden';
+  mode: 'copy' | 'hidden' | 'hunt';
   /** Builds one passage. The same Rng and chart date always give the same passage. */
   make: (rng: Rng, today: ISODate) => Passage;
 }
