@@ -3,7 +3,7 @@ import { editDistance, entryKeyAction, formAccuracy, formWpm, gradeField, gradeF
 import { formAttempt } from './attempt';
 import type { FormField, FormTask } from './types';
 
-const f = (kind: FormField['kind'], answer: string, id = kind): FormField => ({ id, label: id, hint: '', kind, answer });
+const f = (kind: FormField['kind'], answer: string, id: string = kind): FormField => ({ id, label: id, hint: '', kind, answer });
 
 const wrong = (field: FormField, typed: string) => {
   const r = gradeField(field, typed);

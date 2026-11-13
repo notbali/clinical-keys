@@ -233,7 +233,7 @@ describe('the PT prescription form', () => {
   it('turns the sig into label directions, with the quantity and days supply working out', () => {
     for (const t of all) {
       const sig = row(t, 'Sig');
-      const order = orders.find((o) => o.productLine === `${field(t, 'drug').answer} ${field(t, 'strength').answer} ${field(t, 'form').answer}` && o.sig === sig && o.directions === field(t, 'directions').answer);
+      const order = orders.find((o) => o.productLine === `${field(t, 'drug').answer} ${field(t, 'strength').answer} ${field(t, 'form').answer}` && o.sig === sig && o.directions === field(t, 'directions').answer && o.qty === field(t, 'quantity').answer);
       expect(order, `${sig} -> ${field(t, 'directions').answer}`).toBeTruthy();
       expect(order!.kind).not.toBe('fixed');
       expect(row(t, 'Disp')).toBe(`#${field(t, 'quantity').answer}`);

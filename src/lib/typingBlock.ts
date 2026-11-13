@@ -22,7 +22,7 @@ const ROWS: { time: string; name: string; minutes: number; built: boolean; hunt?
   { time: '1:45', name: 'Stretch break', minutes: 10, built: false },
   { time: '1:55', name: 'Shift simulation', minutes: 30, built: false },
   { time: '2:25', name: 'Practice library', minutes: 25, built: true, to: '/drills' },
-  { time: '2:50', name: 'Chart entry forms', minutes: 25, built: false },
+  { time: '2:50', name: 'Chart entry forms', minutes: 25, built: true, to: '/forms' },
   { time: '3:15', name: 'Class challenge', minutes: 15, built: false },
 ];
 
