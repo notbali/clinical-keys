@@ -48,7 +48,29 @@ const MA = [
   "hyperglycemia hypoglycemia hypothyroidism hyperlipidemia",
   "gastroenteritis cholecystectomy colonoscopy appendectomy",
   "pharyngitis sinusitis bronchitis pneumonia otitis media",
-  "dyspnea tachypnea hematuria dysuria nocturia edema erythema"
+  "dyspnea tachypnea hematuria dysuria nocturia edema erythema",
+  "Pt reports sore throat and mild cough x 4 days.",
+  "Vaccine given IM, left deltoid. VIS provided to patient.",
+  "Pt NPO after midnight for the procedure.",
+  "Specimen collected, labeled, and sent to the lab.",
+  "Referral to cardiology submitted for prior authorization.",
+  "Left a voicemail with the office callback number.",
+  "Pt weighed without shoes: 168 lb.",
+  "Pt denies fever, chills, night sweats, or recent weight loss.",
+  "Provider reviewed the lab results with the patient.",
+  "Temperature taken by the temporal method: 98.4 F.",
+  "Fall risk screen completed. Score: low.",
+  "Allergies verified: no known drug allergies (NKDA).",
+  "Hemoglobin A1c ordered per Dr. Nguyen.",
+  "Pt instructed to bring all medication bottles to the next visit.",
+  "Consent form signed and scanned into the chart.",
+  "Eyes: PERRLA, no discharge.",
+  "Heart: regular rate and rhythm, no murmurs.",
+  "Pt called and the appointment was moved to Thursday at 9:15 a.m.",
+  "Pt placed in exam room 3. Provider will be in shortly.",
+  "arthritis osteoporosis fracture sprain tendonitis scoliosis",
+  "migraine neuropathy vertigo syncope seizure tremor",
+  "conjunctivitis cataract glaucoma tinnitus cerumen"
 ];
 
 function vitalsLine(): string {
@@ -100,8 +122,32 @@ const RX = [
   "Claim rejected: Prior authorization required (code 75).",
   "Lot number and expiration date checked.",
   "Count tray wiped down between prescriptions.",
-  "dispense refill generic formulary deductible copay adjudication"
+  "dispense refill generic formulary deductible copay adjudication",
+  "Take 1 tablet by mouth every evening.",
+  "Take 1 capsule by mouth every 12 hours for 7 days.",
+  "Inject 20 units under the skin at bedtime.",
+  "Use 2 sprays in each nostril once daily.",
+  "Take 1 tablet by mouth every 8 hours as needed for nausea and vomiting.",
+  "Take with a full glass of water.",
+  "Avoid prolonged exposure to sunlight.",
+  "Keep out of reach of children.",
+  "Do not take with grapefruit juice.",
+  "Quantity 60, 1 tablet twice daily: 30 days supply.",
+  "Verify the drug, strength, and quantity against the label before bagging.",
+  "Pharmacist verified the prescription before dispensing.",
+  "Counseling offered at pickup; patient accepted.",
+  "Patient ID checked and signature captured at pickup.",
+  "Out of stock; order placed with the wholesaler for tomorrow.",
+  "Insurance updated; claim resubmitted and paid.",
+  "chlorproMAZINE / chlorproPAMIDE",
+  "DOBUTamine / DOPamine",
+  "TOLAZamide / TOLBUTamide",
+  "antihypertensive anticoagulant antidepressant anticonvulsant antihistamine",
+  "suspension suppository ointment lozenge transdermal sublingual"
 ];
+
+/** The line pools, exported so tests can check every line. */
+export const SPRINT_LINES = { ma: MA, rx: RX };
 
 const RX_NAMES = ["Lopez, Maria","Carter, James","Brown, Aisha","Kim, David","Reyes, Carlos","Okafor, Grace","Walsh, Peter","Tran, Linh"];
 const RX_DOCS = ["Dr. A. Patel","Dr. L. Nguyen"];

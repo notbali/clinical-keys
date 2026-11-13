@@ -56,5 +56,66 @@ export const rxDrills: Drill[] = [
     {ctx:"A medication needs prior authorization.", text:"Claim rejected: Prior authorization required (code 75). Fax sent to Dr. Patel's office at 11:05 a.m. requesting PA. Patient offered cash price of $42.18 and declined; will wait for approval."},
     {ctx:"Receiving an order.", text:"Inventory note: Received 3 bottles of atorvastatin 20 mg, 90 count. Lot number and expiration date checked. Short-dated stock (exp. 01/2027) moved to the front of the shelf."},
     {ctx:"A patient question that needs the pharmacist.", text:"Pharmacist consult needed: Patient taking warfarin asked about buying an over-the-counter pain reliever. Sale held until the pharmacist speaks with the patient."}
+  ]},
+{ id:"rx-terms", track:"rx", mode:"copy", title:"Pharmacy Terms",
+  blurb:"Drug classes, dosage forms, insurance words and safety terms you'll type and hear every day behind the counter.",
+  why:"<b>Why it matters:</b> Pharmacy has its own vocabulary, and spell-check can't catch a wrong drug class. Knowing the words by sight makes every later drill faster.",
+  items:[
+    {ctx:"<b>Drug classes.</b> The prefix tells you what the drug is for.", text:"antihypertensive anticoagulant antidepressant anticonvulsant antihistamine antibiotic bronchodilator"},
+    {ctx:"<b>Dosage forms.</b> How the medicine comes.", text:"suspension suppository ointment lozenge transdermal sublingual extended-release"},
+    {ctx:"<b>Pharmacy and insurance.</b> Words from the claim screen.", text:"dispense formulary adjudication deductible copay coinsurance generic"},
+    {ctx:"<b>Safety.</b> Words the pharmacist uses when checking a prescription.", text:"contraindication interaction allergy adverse reaction adherence counseling verification"},
+    {ctx:"<b>Conditions.</b> The diagnoses behind many prescriptions.", text:"hypertension hyperlipidemia diabetes asthma hypothyroidism osteoporosis anxiety"},
+    {ctx:"<b>Measures and routes.</b>", text:"milligram microgram milliliter teaspoonful subcutaneous intramuscular ophthalmic otic topical"}
+  ]},
+{ id:"rx-sig-2", track:"rx", mode:"hidden", title:"Sig Code Translator II", glossary:true,
+  blurb:"More prescriber shorthand to turn into label directions: evening doses, every-8-hour dosing, insulin, nasal sprays and eye drops.",
+  why:"<b>Why it matters:</b> The same few abbreviations make up most sigs, but every drug adds a new twist. Practice on real directions until the translation is automatic.",
+  items:[
+    {ctx:"<b>Atorvastatin 20 mg tablet</b> &nbsp; Sig: <code>1 tab PO qPM</code>", text:"Take 1 tablet by mouth every evening."},
+    {ctx:"<b>Cephalexin 500 mg capsule</b> &nbsp; Sig: <code>1 cap PO q12h x 7 days</code>", text:"Take 1 capsule by mouth every 12 hours for 7 days."},
+    {ctx:"<b>Ibuprofen 800 mg tablet</b> &nbsp; Sig: <code>1 tab PO q8h prn pain with food</code>", text:"Take 1 tablet by mouth every 8 hours as needed for pain. Take with food."},
+    {ctx:"<b>Insulin glargine 100 units/mL pen</b> &nbsp; Sig: <code>20 units subcut qhs</code>", text:"Inject 20 units under the skin at bedtime."},
+    {ctx:"<b>Fluticasone 50 mcg/actuation nasal spray</b> &nbsp; Sig: <code>2 sprays ea nostril daily</code>", text:"Use 2 sprays in each nostril once daily."},
+    {ctx:"<b>Furosemide 20 mg tablet</b> &nbsp; Sig: <code>1 tab PO qAM</code>", text:"Take 1 tablet by mouth every morning."},
+    {ctx:"<b>Prednisone 20 mg tablet</b> &nbsp; Sig: <code>2 tabs PO daily x 5 days with breakfast</code>", text:"Take 2 tablets by mouth once daily for 5 days with breakfast."},
+    {ctx:"<b>Cyclobenzaprine 10 mg tablet</b> &nbsp; Sig: <code>1 tab PO TID prn muscle spasm</code>", text:"Take 1 tablet by mouth three times daily as needed for muscle spasm."},
+    {ctx:"<b>Ondansetron 4 mg tablet</b> &nbsp; Sig: <code>1 tab PO q8h prn N/V</code>", text:"Take 1 tablet by mouth every 8 hours as needed for nausea and vomiting."},
+    {ctx:"<b>Levothyroxine 50 mcg tablet</b> &nbsp; Sig: <code>1 tab PO qAM on empty stomach</code>", text:"Take 1 tablet by mouth every morning on an empty stomach."},
+    {ctx:"<b>Tobramycin 0.3% eye drops</b> &nbsp; Sig: <code>1-2 gtts OS q4h x 7 days</code>", text:"Instill 1 to 2 drops in the left eye every 4 hours for 7 days."}
+  ]},
+{ id:"rx-lasa-2", track:"rx", mode:"copy", title:"Look-Alike Drugs II (Tall Man)",
+  blurb:"More pairs from the FDA's Tall Man list, including groups you'll see in hospital pharmacies.",
+  why:"<b>Why it matters:</b> These pairs look almost identical on a screen or a handwritten script. The capital letters are a reminder to slow down and check the name letter by letter.",
+  items:[
+    {ctx:"Type each pair exactly. The capital letters are the part that differs.", text:"acetaZOLAMIDE / acetoHEXAMIDE, chlorproMAZINE / chlorproPAMIDE, clomiPHENE / clomiPRAMINE"},
+    {ctx:"Diabetes, antibiotic, and allergy and motion-sickness pairs.", text:"TOLAZamide / TOLBUTamide, sulfADIAZINE / sulfiSOXAZOLE, dimenhyDRINATE / diphenhydrAMINE"},
+    {ctx:"Three names in one group: a progestin, a steroid and an androgen.", text:"medroxyPROGESTERone / methylPREDNISolone / methylTESTOSTERone"},
+    {ctx:"Hospital drugs, where a mix-up is especially dangerous.", text:"DOBUTamine / DOPamine, DAUNOrubicin / DOXOrubicin, vinBLAStine / vinCRIStine"},
+    {ctx:"Cancer and transplant drugs.", text:"CISplatin / CARBOplatin, cycloSPORINE / cycloSERINE"},
+    {ctx:"Tall Man names inside a sentence. Check the name, not just the first letters.", text:"Fill hydrALAZINE 25 mg only when the prescription says hydrALAZINE. Fill hydrOXYzine 25 mg only when it says hydrOXYzine."}
+  ]},
+{ id:"rx-daysupply", track:"rx", mode:"copy", title:"Quantity & Days Supply",
+  blurb:"Labels where the quantity, the directions and the days supply all have to agree.",
+  why:"<b>Why it matters:</b> Insurance pays by days supply, and patients run out of medicine if the quantity doesn't match the directions. Check the math before you type the label.",
+  items:[
+    {patient:{name:"Whitaker, Hannah", sex:"F", age:"45 y", dob:"06/14/1981", mrn:"0418273", allergies:"NKDA", provider:"Dr. A. Patel"}, ctx:"Twice a day for 30 days: 60 tablets. Press <b>Enter</b> at each line break.", text:"Rx# 4472015 Whitaker, Hannah\nMetformin 500 mg tablet Qty: 60\nTake 1 tablet by mouth twice daily with meals.\nDays supply: 30 Refills: 5 Dr. A. Patel"},
+    {patient:{name:"Hughes, Walter", sex:"M", age:"62 y", dob:"04/30/1964", mrn:"0287754", allergies:"NKDA", provider:"Dr. A. Patel"}, ctx:"A 90-day supply of a once-daily medicine.", text:"Rx# 4472038 Hughes, Walter\nAtorvastatin 20 mg tablet Qty: 90\nTake 1 tablet by mouth once daily.\nDays supply: 90 Refills: 3 Dr. A. Patel"},
+    {patient:{name:"Carter, James", sex:"M", age:"55 y", dob:"09/05/1971", mrn:"0462093", allergies:"NKDA", provider:"Dr. L. Nguyen"}, ctx:"Three times a day for 7 days: 21 capsules.", text:"Rx# 4472061 Carter, James\nAmoxicillin 500 mg capsule Qty: 21\nTake 1 capsule by mouth three times daily for 7 days.\nFinish all of this medication unless otherwise directed by prescriber.\nDays supply: 7 Refills: 0 Dr. L. Nguyen"},
+    {patient:{name:"Okafor, Grace", sex:"F", age:"52 y", dob:"01/17/1974", mrn:"0759326", allergies:"NKDA", provider:"Dr. A. Patel"}, ctx:"Every 12 hours is twice a day: 14 days is 28 capsules.", text:"Rx# 4472094 Okafor, Grace\nCephalexin 500 mg capsule Qty: 28\nTake 1 capsule by mouth every 12 hours for 14 days.\nDays supply: 14 Refills: 0 Dr. A. Patel"},
+    {patient:{name:"Brennan, Owen", sex:"M", age:"8 y", dob:"03/09/2018", mrn:"0633981", allergies:"NKDA", provider:"Dr. A. Patel"}, ctx:"A liquid. 5 mL twice a day for 10 days is 100 mL.", text:"Rx# 4472117 Brennan, Owen\nAmoxicillin 400 mg/5 mL suspension Qty: 100 mL\nTake 5 mL by mouth twice daily for 10 days.\nShake well before using. Discard unused portion after 14 days.\nDays supply: 10 Refills: 0 Dr. A. Patel"},
+    {patient:{name:"Tran, Linh", sex:"F", age:"26 y", dob:"10/05/2000", mrn:"0771593", allergies:"NKDA", provider:"Dr. L. Nguyen"}, ctx:"An antibiotic with two auxiliary labels.", text:"Rx# 4472140 Tran, Linh\nDoxycycline 100 mg capsule Qty: 20\nTake 1 capsule by mouth twice daily for 10 days.\nTake with a full glass of water. Avoid prolonged exposure to sunlight.\nDays supply: 10 Refills: 0 Dr. L. Nguyen"},
+    {patient:{name:"Walsh, Peter", sex:"M", age:"67 y", dob:"06/02/1959", mrn:"0768014", allergies:"NKDA", provider:"Dr. A. Patel"}, ctx:"A thyroid medicine with a timing instruction.", text:"Rx# 4472166 Walsh, Peter\nLevothyroxine 75 mcg tablet Qty: 30\nTake 1 tablet by mouth once daily on an empty stomach.\nDays supply: 30 Refills: 5 Dr. A. Patel"}
+  ]},
+{ id:"rx-calls", track:"rx", mode:"copy", title:"Calls, Transfers & Pickup",
+  blurb:"Notes for calls from prescriber offices, refill requests, transfers, stock-outs, insurance changes and pickups.",
+  why:"<b>Why it matters:</b> Techs don't take new prescriptions by phone or answer clinical questions: those go to the pharmacist. A clear note shows who did what, and when.",
+  items:[
+    {ctx:"A prescriber's office calls with a new prescription. The pharmacist takes it.", text:"10:20 a.m. - Dr. Patel's office called with a new prescription. Call transferred to the pharmacist, who took the order. Rx entered for pharmacist verification."},
+    {ctx:"A refill request. Check the Rx number and the refills left.", text:"3:05 p.m. - Patient requested a refill of Rx# 4471029, lisinopril 10 mg. Refills remaining: 3. Ready for pickup after 5:00 p.m. today."},
+    {ctx:"A transfer from another pharmacy. The pharmacist handles the call.", text:"Transfer request: Patient asked to move the atorvastatin 20 mg prescription from Valley Drug (555-0148) to this pharmacy. Pharmacist called Valley Drug to complete the transfer. Patient told it will be ready in about 1 hour."},
+    {ctx:"A drug is out of stock.", text:"Out of stock: amoxicillin 500 mg capsules. Order placed with the wholesaler on 11/12/2026, expected tomorrow by noon. Patient offered a partial fill and chose to wait."},
+    {ctx:"A new insurance card. The member ID must match the card exactly.", text:"Insurance updated: Blue Pine Health, member ID QRT7718302, group GRP7731. Claim resubmitted and paid. Copay $10.00."},
+    {ctx:"Handing a prescription to the patient. Two identifiers every time.", text:"Pickup: Verified two identifiers (name and date of birth) before handing over the prescription. Counseling offered; patient accepted. Pharmacist spoke with the patient. Signature captured."}
   ]}
 ];

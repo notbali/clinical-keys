@@ -12,7 +12,7 @@ export const PROGRAM: Record<Track, ProgramDay[]> = {
       {type:"drill", id:"ma-vitals"} ]},
     { n:3, title:"Chief complaints", blurb:"Type what patients tell you, the way it goes in the chart.", acts:[
       {type:"sprint"},
-      {type:"drill", label:"Chief complaints", soon:true} ]},
+      {type:"drill", id:"ma-complaints", label:"Chief complaints"} ]},
     { n:4, title:"SOAP notes I", blurb:"Full Subjective / Objective / Assessment / Plan notes.", acts:[
       {type:"sprint"},
       {type:"drill", id:"ma-soap", label:"SOAP notes I"} ]},
@@ -38,7 +38,7 @@ export const PROGRAM: Record<Track, ProgramDay[]> = {
   rx: [
     { n:1, title:"Pharmacy terms", blurb:"Get your fingers warm and meet the vocabulary of the pharmacy.", acts:[
       {type:"sprint"},
-      {type:"drill", label:"Pharmacy terms", soon:true},
+      {type:"drill", id:"rx-terms", label:"Pharmacy terms"},
       {type:"test", label:"Day 1 baseline typing test", soon:true} ]},
     { n:2, title:"Sig codes: frequencies", blurb:"Daily, BID, TID, every 6 hours: turn shorthand into label directions.", acts:[
       {type:"sprint"},
