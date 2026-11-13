@@ -217,7 +217,8 @@ describe('assignedThrough with a plan (program.ts)', () => {
     expect(day4).toEqual(assignedThrough('ma', 4).filter((a) => a.day === 4));
   });
   it('lists activities in teaching order', () => {
-    const order = [...new Set(assignedThrough('rx', 5, SWAP45).map((a) => a.day))];
+    // Day 4 is taught after Day 5, so "through Day 4" is the last of the first five taught.
+    const order = [...new Set(assignedThrough('rx', 4, SWAP45).map((a) => a.day))];
     expect(order).toEqual([1, 2, 3, 5, 4]);
   });
 });
@@ -293,9 +294,13 @@ describe('instructor metrics with plans (metrics.ts)', () => {
 
   it('does not count a skipped day in the behind total or the completion total', () => {
     const only = [student({ id: 'a', startDate: '2026-11-09' })];
+    // School day 4 is Day 5 with Day 3 skipped: Days 1, 2, 4, 5 are assigned (not Day 3).
     const withSkip = run(only, [], { c1: SKIP3 })[0];
-    const without = run(only, [])[0];
-    expect(withSkip.grade.completion.total).toBeLessThan(without.grade.completion.total);
+    const day3 = assignedThrough('ma', 3).filter((a) => a.day === 3).length;
+    expect(withSkip.day).toBe(5);
+    expect(withSkip.grade.completion.total).toBe(assignedThrough('ma', 5).length - day3);
+    // behind = unfinished among those: nothing done, so it is the whole total
+    expect(withSkip.flags.find((f) => f.kind === 'behind')?.text).toContain(String(withSkip.grade.completion.total));
   });
 
   it('flags the final day and the end by the length of the plan, not by Day 10', () => {
