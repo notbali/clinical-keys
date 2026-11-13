@@ -120,6 +120,7 @@ export function InstructorLayout() {
           <div className="side-nav">
             <NavLink to="/hub" className={({ isActive }) => (isActive ? 'on' : '')}>Today’s room</NavLink>
             <NavLink to="/classes" className={({ isActive }) => (isActive ? 'on' : '')}>Classes</NavLink>
+            <NavLink to="/challenge/host" className={({ isActive }) => (isActive ? 'on' : '')}>Class challenge</NavLink>
             <NavLink to="/settings" className={({ isActive }) => (isActive ? 'on' : '')}>Program &amp; settings</NavLink>
           </div>
           <div className="side-foot">

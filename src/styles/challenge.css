@@ -1,0 +1,39 @@
+/* Class challenge. Colors and fonts come from theme.css only. */
+
+.chal-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; padding: 14px 18px; border-radius: 10px; background: var(--chrome); color: var(--on-chrome); border: 2px solid var(--accent); }
+.chal-banner b { color: var(--surface); font-size: 18px; }
+.chal-banner .btn { background: var(--surface); color: var(--chrome); }
+
+.chal-board { width: 100%; border-collapse: collapse; }
+.chal-board th { text-align: left; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 6px 10px; border-bottom: 2px solid var(--line); }
+.chal-board td { padding: 10px; border-bottom: 1px solid var(--line-soft); font-size: 18px; }
+.chal-board .num-col { text-align: right; }
+.chal-board tr.me td { background: var(--accent-soft); font-weight: 700; }
+.chal-board tr.dim td { color: var(--muted); }
+
+/* The classroom projector page: very large type, high contrast, nothing else on the screen. */
+.chal-screen { min-height: 100vh; background: var(--chrome); color: var(--surface); padding: 3vh 4vw; display: flex; flex-direction: column; gap: 2.5vh; font-family: var(--font-ui); }
+.chal-screen-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px; }
+.chal-screen-head h1 { font-size: clamp(36px, 5vw, 80px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+.chal-screen-state { font-size: clamp(22px, 2.6vw, 44px); font-weight: 700; color: var(--chrome); background: var(--surface); padding: 0.15em 0.6em; border-radius: 0.3em; }
+.chal-screen-state.live { background: var(--good-soft); color: var(--good-ink); }
+.chal-screen-sub { font-size: clamp(20px, 2.2vw, 36px); color: var(--on-chrome); }
+.chal-screen-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1.2vh; }
+.chal-screen-row { display: grid; grid-template-columns: 1.6em minmax(0, 1fr) auto auto; align-items: center; gap: 1.2vw; padding: 1.2vh 1.6vw; border-radius: 0.3em; background: var(--chrome-2); border: 2px solid var(--chrome-line); font-size: clamp(28px, 4.2vw, 72px); line-height: 1.1; }
+.chal-screen-row.first { background: var(--surface); color: var(--chrome); border-color: var(--surface); }
+.chal-screen-row.dim { background: transparent; color: var(--on-chrome-muted); border-style: dashed; }
+.chal-screen-rank { font-weight: 800; text-align: right; }
+.chal-screen-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chal-screen-stat { font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+.chal-screen-stat small { font-size: 0.45em; font-weight: 600; margin-left: 0.25em; opacity: 0.85; }
+.chal-screen-acc { font-size: 0.6em; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 3.4em; text-align: right; }
+.chal-screen-note { font-size: 0.4em; font-weight: 700; margin-left: 0.5em; padding: 0 0.4em; border: 2px solid currentColor; border-radius: 0.3em; white-space: nowrap; }
+.chal-screen-empty { font-size: clamp(28px, 3.4vw, 56px); color: var(--on-chrome); padding: 6vh 0; }
+.chal-screen-more { font-size: clamp(20px, 2.2vw, 36px); color: var(--on-chrome); }
+.chal-screen-err { font-size: clamp(18px, 1.8vw, 28px); color: var(--warn-soft); }
+.chal-screen .tk { font-size: 0.4em; font-weight: 800; padding: 0 0.4em; border-radius: 0.3em; margin-right: 0.5em; vertical-align: middle; }
+.chal-screen .tk.ma { background: var(--ma-soft); color: var(--ma-ink); }
+.chal-screen .tk.rx { background: var(--pt-soft); color: var(--pt-ink); }
+
+.chal-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.chal-sample { font-family: var(--font-mono); font-size: 13px; white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; max-height: 180px; overflow: auto; }
