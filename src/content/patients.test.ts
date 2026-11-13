@@ -24,6 +24,9 @@ const EXPECTED: [string, number[]][] = [
   ['ma-vitals', [2, 4]],
   ['ma-phone', [0, 1, 2]],
   ['rx-labels', [0, 1, 2, 3]],
+  ['ma-complaints', [6, 7]],
+  ['ma-procedures', [0, 1, 2, 3, 4, 5]],
+  ['rx-daysupply', [0, 1, 2, 3, 4, 5, 6]],
 ];
 
 const withPatients = (): { id: string; index: number; passage: Passage }[] =>

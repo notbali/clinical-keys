@@ -10,6 +10,16 @@ const WINDOW: Record<string, string> = {
   'rx-labels': 'Prescription Label Entry',
   'rx-safety': 'Label Text and Safety Warnings',
   'rx-workflow': 'Pharmacy Note',
+  'ma-terms-2': 'Terminology',
+  'ma-complaints': 'Triage: Chief Complaint',
+  'ma-abbrev': 'History and Exam Entry',
+  'ma-procedures': 'Procedure and Immunization Record',
+  'ma-referrals': 'Referrals and Insurance',
+  'rx-terms': 'Terminology',
+  'rx-sig-2': 'Order Entry: Prescription Directions',
+  'rx-lasa-2': 'Drug Name Entry',
+  'rx-daysupply': 'Prescription Label Entry',
+  'rx-calls': 'Pharmacy Note',
 };
 
 export const windowTitle = (kind: 'sprint' | 'drill', drillId?: string): string =>

@@ -85,23 +85,23 @@ const attempt = (over: Partial<Attempt>): Attempt => ({
 });
 
 describe('typing grade', () => {
-  it('combines 97% accuracy, 29 of 35 WPM and 6 of 7 activities into a grade of 91', () => {
+  it('combines 97% accuracy, 29 of 35 WPM and 7 of 8 activities into a grade of 91', () => {
     const assigned = assignedThrough('ma', 4);
-    // Days 1 to 4 have 7 real activities (chief complaints and the tests are still "coming soon").
-    expect(assigned).toHaveLength(7);
-    // Complete 6 of the 7 (every passage clean) and leave the last one unfinished.
+    // Days 1 to 4 have 8 real activities (the tests are still "coming soon").
+    expect(assigned).toHaveLength(8);
+    // Complete 7 of the 8 (every passage clean) and leave the last one unfinished.
     const attempts: Attempt[] = [];
     let t = 0;
-    assigned.slice(0, 6).forEach((a) => {
+    assigned.slice(0, 7).forEach((a) => {
       a.passages.forEach((p) => {
         attempts.push(attempt({ day: a.day, act: a.act, passage: p, createdAt: `2026-11-1${t++ % 10}T12:00:00Z`, accuracy: 97, wpm: 29 }));
       });
     });
     const g = computeTypingGrade({ attempts, track: 'ma', day: 4, settings: DEFAULT_SETTINGS });
-    expect(g.completion).toEqual({ done: 6, total: 7 });
+    expect(g.completion).toEqual({ done: 7, total: 8 });
     expect(g.accuracyScore).toBe(100);
     expect(g.speedScore).toBe(83);
-    expect(g.completionScore).toBe(86);
+    expect(g.completionScore).toBe(88);
     expect(g.computed).toBe(91);
   });
   it('has no grade before any runs, and shows an override instead of the computed value', () => {
