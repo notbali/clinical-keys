@@ -115,8 +115,56 @@ describe.skipIf(!enabled)('supabase adapter against a local stack', () => {
     expect((await fresh().signInStudent(username)).ok).toBe(true);
   });
 
+  it('saves, reads and resets a class day plan, and keeps students from changing it', async () => {
+    expect(await instructor.getClassPlan(classId)).toEqual({ days: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }); // none saved: the default
+    await instructor.setClassPlan(classId, { days: [1, 2, 4, 3, 5, 6, 7, 8, 9] }); // Day 10 skipped, 3 and 4 swapped
+    expect(await instructor.getClassPlan(classId)).toEqual({ days: [1, 2, 4, 3, 5, 6, 7, 8, 9] });
+    expect(await student.getClassPlan(classId)).toEqual({ days: [1, 2, 4, 3, 5, 6, 7, 8, 9] }); // a student reads their own class's plan
+    await expect(student.setClassPlan(classId, { days: [1] })).rejects.toThrow();
+    await expect(instructor.setClassPlan(classId, { days: [1, 1] })).rejects.toThrow(); // repeated day
+    await expect(instructor.setClassPlan(classId, { days: [] })).rejects.toThrow();
+    await expect(instructor.setClassPlan(classId, { days: [1, 11] })).rejects.toThrow(); // no such day
+    expect(await instructor.getClassPlan(classId)).toEqual({ days: [1, 2, 4, 3, 5, 6, 7, 8, 9] }); // bad saves changed nothing
+    expect((await instructor.listAudit()).some((e) => e.action === 'class.plan')).toBe(true);
+    await instructor.setClassPlan(classId, { days: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }); // saving the default clears the plan
+    expect((await admin.from('class_plans').select('class_id').eq('class_id', classId)).data).toEqual([]);
+    expect(await instructor.getClassPlan(classId)).toEqual({ days: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] });
+    await instructor.setClassPlan(classId, { days: [2, 1, 3] }); // leave one saved, so deleting the class has to remove it
+  });
+
+  it('runs a class challenge round: open it, join it, one result each, only a first name and initial, then end it', async () => {
+    const passages = { ma: { drillId: 'ma-gen-vitals', seed: 7, chartDate: '2026-11-12' } };
+    await expect(student.createChallenge(classId, passages)).rejects.toThrow(); // only an instructor opens a round
+    const first = await instructor.createChallenge(classId, passages);
+    expect(first).toMatchObject({ classId, status: 'open', passages });
+    expect((await student.getActiveChallenge())?.id).toBe(first.id); // the student's own class's open round
+    expect((await instructor.getActiveChallenge(classId))?.id).toBe(first.id);
+
+    const result = await student.submitChallengeResult(first.id, { wpm: 42, accuracy: 98, errorsLeft: 0, seconds: 61, revealed: false });
+    expect(result).toMatchObject({ challengeId: first.id, studentId, track: 'ma', clean: true, displayName: 'Maya Z.' });
+    await expect(student.submitChallengeResult(first.id, { wpm: 99, accuracy: 100, errorsLeft: 0, seconds: 30, revealed: false })).rejects.toThrow(); // one try only
+    const shown = await instructor.listChallengeResults(first.id);
+    expect(shown.map((r) => r.displayName)).toEqual(['Maya Z.']);
+    expect(JSON.stringify(shown)).not.toContain(`Zq${rand}`); // the projector never gets the full last name
+    expect((await student.listChallengeResults(first.id)).map((r) => r.id)).toEqual([result.id]);
+
+    const second = await instructor.createChallenge(classId, passages); // a new round ends the old one
+    expect((await instructor.getChallenge(first.id))?.status).toBe('ended');
+    expect((await student.getActiveChallenge())?.id).toBe(second.id);
+    await expect(student.endChallenge(second.id)).rejects.toThrow(); // students cannot end a round...
+    expect((await instructor.getChallenge(second.id))?.status).toBe('open'); // ...and it really stayed open
+    await instructor.endChallenge(second.id);
+    expect((await instructor.getChallenge(second.id))?.status).toBe('ended');
+    await expect(instructor.endChallenge(second.id)).resolves.toBeUndefined(); // ending it again does nothing
+    await expect(student.submitChallengeResult(second.id, { wpm: 40, accuracy: 97, errorsLeft: 0, seconds: 60, revealed: false })).rejects.toThrow(); // a closed round takes no results
+    expect(await student.getActiveChallenge()).toBeNull();
+    await instructor.createChallenge(classId, passages); // leave one open, so deleting the class has to remove it
+  });
+
   it('deletes a class together with its students and their runs', async () => {
     await instructor.deleteClass(classId);
+    expect((await admin.from('class_plans').select('class_id').eq('class_id', classId)).data).toEqual([]);
+    expect((await admin.from('challenges').select('id').eq('class_id', classId)).data).toEqual([]);
     expect((await instructor.listClasses()).some((c) => c.id === classId)).toBe(false);
     const { data } = await admin.from('students').select('id').eq('owner_id', instructorId);
     expect(data).toEqual([]);

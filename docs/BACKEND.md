@@ -5,9 +5,9 @@ With `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` set the app uses `src/data
 browser-only demo adapter (`src/data/demoApi.ts`).
 
 What was verified locally:
-- `supabase/tests/rls.sql`: 41 row-level security and access checks, all passing (students see only their own rows, instructors only theirs,
+- `supabase/tests/rls.sql`: 82 row-level security and access checks (including class day plans from migration 0003 and the class challenge from 0004), all passing (students see only their own rows, instructors only theirs,
   the audit log is append-only, `delete_class` is owner-only and removes only that class's data, and more).
-- `src/data/supabaseApi.integration.test.ts`: 8 end-to-end tests of the adapter and the `student-login` function (instructor and
+- `src/data/supabaseApi.integration.test.ts`: 10 end-to-end tests (including a day plan and a full challenge round) of the adapter and the `student-login` function (instructor and
   student sign-in, enroll, save runs, overrides, notes, archive blocks sign-in, delete cascades).
 - The rate limit (40 failed guesses per client per 10 minutes, then HTTP 429).
 - A manual click-through in the browser: instructor sign-in, create class, paste-and-enroll, student sign-in with the

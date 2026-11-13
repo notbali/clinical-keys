@@ -1,14 +1,17 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Card, ErrorNote, Tag, mmss } from '../../components/ui';
 import { useStudent } from '../../components/Layouts';
-import { useApi } from '../../data/context';
+import { useSaveQueue } from '../../components/SaveQueue';
 import { getDrill, getGeneratedDrill, GLOSSARY, newSeed, parseSeed, resolveGeneratedDrill, SPRINT } from '../../content';
 import { todayISO } from '../../lib/dates';
+import { resumeKey as makeResumeKey } from '../../lib/resume';
+import { resultShortcut, targetKind } from '../../lib/shortcuts';
 import { programFor, resolveActivity } from '../../lib/program';
 import { TypingPlayer } from '../../typing/TypingPlayer';
 import { ErrorHuntPlayer } from '../../typing/ErrorHuntPlayer';
 import { PatientBanner } from '../../components/PatientBanner';
+import { WeakWords } from '../../components/WeakWords';
 import { windowTitle } from '../../lib/ehrLabels';
 import type { RunResult } from '../../typing/engine';
 import type { NewAttempt } from '../../data/api';
@@ -32,9 +35,8 @@ function messageFor(r: RunResult, sprint: boolean, hidden: boolean): { title: st
 }
 
 export function Practice() {
-  const api = useApi();
   const nav = useNavigate();
-  const { me, attempts, reload, ehr } = useStudent();
+  const { me, attempts, ehr } = useStudent();
   const [params] = useSearchParams();
   const kind = params.get('kind') === 'sprint' ? 'sprint' : 'drill';
   const drillId = params.get('drill') ?? '';
@@ -55,6 +57,12 @@ export function Practice() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState<NewAttempt | null>(null);
+  const [queued, setQueued] = useState(false);
+  const queue = useSaveQueue();
+  // Keyboard flow: the result heading takes focus when a run ends, and Enter / Esc act on the result.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const finishedAt = useRef(0);
+  const actions = useRef({ next: () => {}, again: () => {} });
 
   // Which passages belong to this program activity (for "Next passage").
   const list = useMemo(() => {
@@ -70,14 +78,18 @@ export function Practice() {
   const sprintText = useMemo(() => SPRINT.build(me.track), [me.track, round]); // eslint-disable-line react-hooks/exhaustive-deps
   const target = kind === 'sprint' ? sprintText : drill?.items[passage]?.text ?? '';
 
+  // A run that can't be saved right now goes into a queue on this device and uploads by itself (see SaveQueue).
   const save = useCallback(async (a: NewAttempt) => {
-    setSaving(true); setSaveError(null);
-    try { await api.saveAttempt(a); setPending(null); reload(); }
-    catch { setPending(a); setSaveError('We couldn’t save this run. Check your connection, then try saving again.'); }
+    setSaving(true); setSaveError(null); setQueued(false);
+    const r = await queue.submit(a);
+    if (r === 'queued') { setPending(null); setQueued(true); }
+    else if (r === 'failed') { setPending(a); setSaveError('We couldn’t save this run, and this browser can’t keep it for later. Check your connection, then try saving again.'); }
+    else setPending(null);
     setSaving(false);
-  }, [api, reload]);
+  }, [queue]);
 
   const onFinish = useCallback((r: RunResult) => {
+    finishedAt.current = performance.now();
     setResult(r);
     void save({
       // A generated drill has no passage number, so the run keeps its seed there: the same passage can be rebuilt from it.
@@ -86,28 +98,46 @@ export function Practice() {
     });
   }, [save, kind, me.track, drill?.id, passage, generated, seed, day, act]);
 
+  useEffect(() => { if (result) headingRef.current?.focus(); }, [result]);
+  useEffect(() => {
+    if (!result) return;
+    const onKey = (e: KeyboardEvent) => {
+      const act = resultShortcut(
+        { key: e.key, ctrl: e.ctrlKey, meta: e.metaKey, alt: e.altKey, shift: e.shiftKey, repeat: e.repeat, target: targetKind(e.target as HTMLElement | null) },
+        { hasResult: true, msSinceFinish: performance.now() - finishedAt.current },
+      );
+      if (!act) return;
+      e.preventDefault();
+      if (act === 'next') actions.current.next(); else actions.current.again();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [result]);
+
   if (generated && seed == null) return <Navigate replace to={`/practice?kind=drill&drill=${drillId}&seed=${newSeed()}`} />;
   if (kind === 'drill' && (!drill || !drill.items[passage])) return <ErrorNote>That drill wasn’t found. <Link to="/today">Back to Today</Link></ErrorNote>;
 
-  const restart = () => { setResult(null); setSaveError(null); setPending(null); setRound((n) => n + 1); };
+  const restart = () => { setResult(null); setSaveError(null); setPending(null); setQueued(false); setRound((n) => n + 1); };
   const goNext = () => {
     if (kind === 'sprint') return restart();
     if (generated) {
       nav(`/practice?kind=drill&drill=${drill!.id}&seed=${newSeed()}`);
-      setResult(null); setSaveError(null); setPending(null); setRound((n) => n + 1);
+      setResult(null); setSaveError(null); setPending(null); setQueued(false); setRound((n) => n + 1);
       return;
     }
     const done = new Set(attempts.filter((a) => a.completed && a.day === day && a.act === act).map((a) => a.passage));
     const after = list[(list.indexOf(passage) + 1) % list.length];
     const next = list.find((p) => !done.has(p) && p !== passage) ?? after;
     nav(`/practice?kind=drill&drill=${drill!.id}&passage=${next}${day != null ? `&day=${day}&act=${act}` : ''}`);
-    setResult(null); setSaveError(null); setPending(null); setRound((n) => n + 1);
+    setResult(null); setSaveError(null); setPending(null); setQueued(false); setRound((n) => n + 1);
   };
+
+  actions.current = { next: goNext, again: restart };
 
   const title = kind === 'sprint' ? 'Warm-up Sprint' : drill!.title;
   const rx = me.track === 'rx';
   const hunt = drill?.mode === 'hunt';
-  const msg = result ? (hunt ? huntMessage(result) : messageFor(result, kind === 'sprint', drill?.mode === 'hidden')) : null;
+  const msg = result ? (hunt ? huntMessage(result) : messageFor(result, kind === 'sprint', drill?.mode === 'hidden' && rx)) : null;
   const pos = list.indexOf(passage) + 1;
   const where = kind === 'sprint' ? `${SPRINT.limit}-second sprint` : generated ? 'New every time' : `Passage ${pos} of ${list.length}`;
 
@@ -115,7 +145,7 @@ export function Practice() {
     <div className="scenario">
       <div dangerouslySetInnerHTML={{ __html: kind === 'sprint' ? SPRINT.intro : drill!.items[passage].ctx }} />
       <p className="muted" style={{ fontSize: 14, marginTop: 6 }}>
-        {kind === 'sprint' ? SPRINT.note : hunt ? 'Proofread the note. Edit the text to fix every error, then press Check my note. Stuck? Use a hint.' : drill!.mode === 'hidden' ? 'Type the label directions in full. Letters appear as you get them right, and red means wrong. Use the cheat sheet below if you’re stuck.' : 'Type it exactly as shown. Capitals, numbers, spacing and punctuation all count.'}
+        {kind === 'sprint' ? SPRINT.note : hunt ? 'Proofread the note. Edit the text to fix every error, then press Check my note. Stuck? Use a hint.' : drill!.mode === 'hidden' ? (drill!.glossary ? 'Type the label directions in full. Letters appear as you get them right, and red means wrong. Use the cheat sheet below if you’re stuck.' : 'Type the chart entry from the facts above, in the format the scenario gives. Letters appear as you get them right, and red means wrong.') : 'Type it exactly as shown. Capitals, numbers, spacing and punctuation all count.'}
       </p>
     </div>
   );
@@ -124,7 +154,7 @@ export function Practice() {
   const player = hunt && current?.flawed && current.errors ? (
     <ErrorHuntPlayer key={playerKey} flawed={current.flawed} fixed={current.text} errors={current.errors} onFinish={onFinish} onRestart={restart} />
   ) : (
-    <TypingPlayer key={playerKey} target={target} mode={drill?.mode === 'hidden' ? 'hidden' : 'copy'} limit={kind === 'sprint' ? SPRINT.limit : undefined} onFinish={onFinish} onRestart={restart} />
+    <TypingPlayer key={playerKey} target={target} mode={drill?.mode === 'hidden' ? 'hidden' : 'copy'} limit={kind === 'sprint' ? SPRINT.limit : undefined} onFinish={onFinish} onRestart={restart} resumeKey={makeResumeKey(me.id, kind, drill?.id, generated ? (seed ?? 0) : passage)} />
   );
 
   return (
@@ -152,12 +182,13 @@ export function Practice() {
 
       {result && msg && (
         <Card className={`result ${msg.warn ? 'warn' : ''}`}>
-          <h2 style={{ fontSize: 22, fontWeight: 700 }}>{msg.title}</h2>
+          <h2 ref={headingRef} tabIndex={-1} style={{ fontSize: 22, fontWeight: 700 }}>{msg.title}</h2>
           <p className="muted">{msg.text}{result.clean ? ' This run counts toward your personal best.' : ''}</p>
           <div className="result-stats num">
             <div><span>{hunt ? 'Hints' : 'WPM'}</span><b>{hunt ? result.peeks : result.wpm}</b></div><div><span>Accuracy</span><b>{result.accuracy}%</b></div>
             <div><span>Time</span><b>{mmss(result.seconds)}</b></div><div><span>Errors left</span><b>{result.errorsLeft}</b></div>
           </div>
+          <WeakWords result={result} />
           {saveError && <div style={{ marginBottom: 12 }}><ErrorNote>{saveError}</ErrorNote></div>}
           <div className="row">
             <Button variant="primary" onClick={goNext}>{kind === 'sprint' ? 'Another sprint →' : generated ? 'New passage →' : 'Next passage →'}</Button>
@@ -165,8 +196,10 @@ export function Practice() {
             {pending && <Button onClick={() => void save(pending)} busy={saving}>Save this run</Button>}
             <Link to="/today" className="btn btn-secondary">Back to Today</Link>
             {saving && <span className="hint" role="status">Saving…</span>}
-            {!saving && !saveError && <span className="hint" role="status">Saved</span>}
+            {!saving && queued && <span className="hint" role="status">Saved on this device. It will upload by itself when your connection is back.</span>}
+            {!saving && !saveError && !queued && <span className="hint" role="status">Saved</span>}
           </div>
+          <p className="hint" style={{ marginTop: 10 }}>Keyboard: <kbd>Enter</kbd> next passage · <kbd>Esc</kbd> try again · <kbd>Tab</kbd> for the buttons</p>
         </Card>
       )}
 

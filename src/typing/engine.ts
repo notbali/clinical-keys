@@ -8,9 +8,11 @@ export interface RunState {
   wrong: number;
   /** performance.now() at the first keystroke, or null before starting. */
   start: number | null;
+  /** Target positions where a wrong key was typed, even if fixed later. Feeds the weak-word report. */
+  missedAt?: number[];
 }
 
-export const newRun = (): RunState => ({ typed: '', keys: 0, wrong: 0, start: null });
+export const newRun = (): RunState => ({ typed: '', keys: 0, wrong: 0, start: null, missedAt: [] });
 
 const normalize = (s: string) => s.replace(/\r/g, '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
 
@@ -19,11 +21,15 @@ export function applyInput(state: RunState, target: string, raw: string, now: nu
   let v = normalize(raw);
   if (v.length > target.length) v = v.slice(0, target.length);
   let { keys, wrong } = state;
+  let missedAt = state.missedAt;
   for (let i = state.typed.length; i < v.length; i++) {
     keys++;
-    if (v[i] !== target[i]) wrong++;
+    if (v[i] !== target[i]) {
+      wrong++;
+      missedAt = [...(missedAt ?? []), i];
+    }
   }
-  return { typed: v, keys, wrong, start: state.start ?? (v.length ? now : null) };
+  return { typed: v, keys, wrong, start: state.start ?? (v.length ? now : null), missedAt };
 }
 
 export function correctCount(typed: string, target: string): number {
@@ -50,6 +56,55 @@ export function wpm(s: RunState, target: string, now: number, limit?: number): n
   return mins > 0.03 ? Math.round(correctCount(s.typed, target) / 5 / mins) : 0;
 }
 
+/** A word as it sits in the target text: `word` is the whole token, `start`/`end` are its character positions. */
+export interface TargetWord { word: string; start: number; end: number }
+
+/** The word without punctuation around it ("hydrOXYzine," becomes "hydrOXYzine"). Case is kept: Tall Man letters matter. */
+export const wordKey = (token: string): string => token.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+
+/** Every whitespace-separated token of the target, in order. */
+export function targetWords(target: string): TargetWord[] {
+  const out: TargetWord[] = [];
+  for (const m of target.matchAll(/\S+/g)) out.push({ word: m[0], start: m.index!, end: m.index! + m[0].length });
+  return out;
+}
+
+/** Words shorter than this are skipped in the weak-word report ("a", "x"). */
+const MIN_WORD = 2;
+
+export interface MissedWord { word: string; count: number }
+
+/**
+ * Words a run got wrong at least once, with how many places in the text each was missed. A word with several wrong
+ * keystrokes in one place counts once. Wrong keys in the gaps between words belong to no word. Most missed first.
+ */
+export function missedWordsOf(missedAt: readonly number[], target: string): MissedWord[] {
+  const spans = targetWords(target);
+  const hit = new Set<number>();
+  let w = 0;
+  for (const pos of [...missedAt].sort((a, b) => a - b)) {
+    while (w < spans.length && spans[w].end <= pos) w++;
+    if (w < spans.length && pos >= spans[w].start) hit.add(w);
+  }
+  const counts = new Map<string, number>();
+  for (const i of hit) {
+    const key = wordKey(spans[i].word);
+    if (key.length >= MIN_WORD) counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return [...counts.entries()].map(([word, count]) => ({ word, count })).sort((a, b) => b.count - a.count || a.word.localeCompare(b.word));
+}
+
+/** Words that were fully typed without a single wrong key (each listed once). Words not reached yet are left out. */
+export function cleanWordsOf(missedAt: readonly number[], typedLength: number, target: string): string[] {
+  const missed = new Set(missedWordsOf(missedAt, target).map((m) => m.word));
+  const out = new Set<string>();
+  for (const { word, end } of targetWords(target)) {
+    const key = wordKey(word);
+    if (end <= typedLength && key.length >= MIN_WORD && !missed.has(key)) out.add(key);
+  }
+  return [...out];
+}
+
 export interface RunResult {
   wpm: number;
   accuracy: number;
@@ -63,6 +118,10 @@ export interface RunResult {
   completed: boolean;
   /** Completed with 95% accuracy or better: the only runs that count as personal bests. */
   clean: boolean;
+  /** Words missed during the run (typing runs only; absent for error hunts). */
+  missedWords?: MissedWord[];
+  /** Words typed completely with no wrong key, so a weak word can be cleared once it is typed right. */
+  cleanWords?: string[];
 }
 
 export function finishRun(s: RunState, target: string, endAt: number, opts: { limit?: number; revealed?: boolean; peeks?: number } = {}): RunResult {
@@ -81,5 +140,7 @@ export function finishRun(s: RunState, target: string, endAt: number, opts: { li
     peeks: opts.peeks ?? 0,
     completed,
     clean: completed && acc >= 95,
+    missedWords: missedWordsOf(s.missedAt ?? [], target),
+    cleanWords: cleanWordsOf(s.missedAt ?? [], s.typed.length, target),
   };
 }

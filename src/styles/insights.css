@@ -1,0 +1,53 @@
+/* Instructor insight screens: class heatmap, rolling start, printable report. Colors come from theme.css only.
+   Heatmap states differ by symbol, word, border style and a blue/amber palette, so colour is never the only signal. */
+
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.data-table caption { text-align: left; font-size: 13px; color: var(--muted); padding-bottom: 8px; }
+.data-table th, .data-table td { padding: 8px 8px; border-top: 1px solid var(--line-soft); text-align: left; vertical-align: middle; }
+.data-table thead th { border-top: 0; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.data-table tbody th { font-weight: 700; }
+.data-table tbody th a { color: var(--ink); text-decoration: none; }
+.data-table tbody th a:hover { text-decoration: underline; }
+.table-scroll { overflow-x: auto; }
+
+.heat { border-collapse: separate; border-spacing: 3px; width: 100%; font-variant-numeric: tabular-nums; }
+.heat thead th { font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); font-weight: 600; text-align: center; padding: 4px 2px; }
+.heat thead th:first-child, .heat tbody th { text-align: left; }
+.heat tbody th { font-weight: 700; font-size: 14px; padding: 4px 8px 4px 0; white-space: nowrap; }
+.heat tbody th a { color: var(--ink); text-decoration: none; }
+.heat tbody th a:hover { text-decoration: underline; }
+.heat-cell { text-align: center; border-radius: 6px; padding: 6px 4px; min-width: 64px; font-size: 13px; line-height: 1.25; border: 1px solid var(--line); }
+.heat-cell .sym { font-weight: 800; font-size: 15px; margin-right: 3px; }
+.heat-cell small { display: block; font-size: 11.5px; }
+.heat-done { background: var(--info-soft); color: var(--info-ink); border-color: var(--info-soft); }
+.heat-partial { background: var(--surface); color: var(--info-ink); border: 2px dashed var(--link); }
+.heat-behind { background: var(--warn-soft); color: var(--warn-ink); border: 2px solid var(--warn); font-weight: 700; }
+.heat-today { background: var(--surface); color: var(--ink); border: 2px solid var(--ink); }
+.heat-upcoming { background: var(--bg); color: var(--muted); border-color: var(--line-soft); }
+.heat-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; margin: 0; padding: 0; font-size: 13px; }
+.heat-legend li { display: flex; align-items: center; gap: 8px; }
+.heat-legend .heat-cell { min-width: 0; padding: 2px 10px; }
+
+.risk-line { font-size: 12.5px; font-weight: 600; color: var(--bad-ink); }
+
+/* Printable report */
+.report { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; max-width: 880px; }
+.report h1 { font-size: 26px; font-weight: 800; }
+.report h2 { font-size: 16px; font-weight: 700; border-bottom: 2px solid var(--ink); padding-bottom: 4px; margin-bottom: 8px; }
+.report-meta { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 14px; color: var(--ink-2); }
+.report-big { display: flex; flex-wrap: wrap; gap: 12px 32px; }
+.report-big div b { display: block; font-size: 26px; line-height: 1.1; }
+.report-big div span { font-size: 12.5px; color: var(--muted); }
+.report-private { border: 2px dashed var(--line-strong); border-radius: 8px; padding: 12px 14px; }
+
+@media print {
+  @page { margin: 14mm; }
+  body { background: #fff; }
+  .side, .demo-banner, .skip, .no-print { display: none !important; }
+  .shell { display: block; min-height: 0; }
+  .main { padding: 0; gap: 12px; display: block; }
+  .report { border: 0; padding: 0; max-width: none; }
+  .report section, .report tr { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+  .heat-cell, .tag { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

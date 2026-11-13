@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, ProgressBar, Tag } from '../../components/ui';
+import { ImprovementCard } from '../../components/ImprovementCard';
+import { activityLabel, drillKey } from '../../lib/progress';
 import { useStudent } from '../../components/Layouts';
 import { programFor, resolveActivity, doneCount, assignedThrough } from '../../lib/program';
 import { streak } from '../../lib/stats';
 import { computeTypingGrade } from '../../lib/grades';
 import { getDrill } from '../../content';
+import { ChallengeBanner } from '../../components/ChallengeBanner';
 import { dailyPassageIndex, typingBlock } from '../../lib/typingBlock';
 
 export function Today() {
@@ -26,9 +29,9 @@ export function Today() {
     return real.length > 0 && real.every(({ r, i }) => doneCount(attempts, n, i, r.kind === 'soon' ? [] : r.passages) >= (r.kind === 'soon' ? 0 : r.passages.length));
   };
   const bests = [
-    ...new Map(attempts.filter((a) => a.clean).sort((a, b) => b.wpm - a.wpm).map((a) => [a.kind === 'sprint' ? 'Warm-up sprint' : a.drillId ?? '', a])).entries(),
+    ...new Map(attempts.filter((a) => a.clean).sort((a, b) => b.wpm - a.wpm).map((a) => [drillKey(a), a])).entries(),
   ].slice(0, 4);
-  const behind = assignedThrough(me.track, current).length - grade.completion.done;
+  const behind = assignedThrough(me.track, current, settings.classPlan).length - grade.completion.done;
 
   return (
     <>
@@ -40,6 +43,8 @@ export function Today() {
         </div>
         <div className="card row" style={{ padding: '10px 16px' }}><span className="num" style={{ fontSize: 26, fontWeight: 700, color: 'var(--accent)' }}>{sk}</span><div style={{ fontSize: 14, lineHeight: 1.3 }}><b>day streak</b><br /><span className="muted">{sk ? 'Keep it going' : 'Finish a run to start one'}</span></div></div>
       </div>
+
+      <ChallengeBanner track={me.track} />
 
       <div className="days" role="group" aria-label="Your 10-day program">
         {program.map((d) => {
@@ -120,9 +125,10 @@ export function Today() {
                 <div className="hint">{grade.bestWpm == null ? 'Finish a run to see this.' : grade.speedScore >= 100 ? 'Target met.' : `${target.wpm - grade.bestWpm} WPM to go.`}</div></div>
             </div>
           </Card>
+          <ImprovementCard />
           <Card title="Personal bests">
             {bests.length === 0 ? <p className="empty">No clean runs yet. Finish one with no errors left and 95% accuracy or better.</p> : (
-              <div>{bests.map(([k, a]) => <div className="kv" key={k}><span>{a.kind === 'sprint' ? 'Warm-up sprint' : getDrill(k)?.title ?? k}</span><b className="num">{a.wpm} WPM · {a.accuracy}%</b></div>)}</div>
+              <div>{bests.map(([k, a]) => <div className="kv" key={k}><span>{activityLabel(k)}</span><b className="num">{a.wpm} WPM · {a.accuracy}%</b></div>)}</div>
             )}
             <p className="hint" style={{ marginTop: 8 }}>Only clean runs count: no errors left, 95% accuracy or better.</p>
           </Card>

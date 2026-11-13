@@ -4,6 +4,8 @@ import { Button, Card, ErrorNote, Field, Tag } from '../../components/ui';
 import { useApi } from '../../data/context';
 import { useRoster } from '../../data/useRoster';
 import { parseRoster } from '../../lib/roster';
+import { defaultPlan, isDefaultPlan, programLength } from '../../lib/plan';
+import { PlanEditor } from './PlanEditor';
 import { dateOfProgramDay, todayISO } from '../../lib/dates';
 import { download, gradesCsv } from '../../lib/exports';
 import type { ClassGroup } from '../../data/types';
@@ -13,7 +15,8 @@ type Pending = { kind: 'archive' | 'delete'; cls: ClassGroup } | null;
 
 export function Classes() {
   const api = useApi();
-  const { metrics, classes, loading, error, reload, settings } = useRoster();
+  const { metrics, classes, plans, loading, error, reload, settings } = useRoster();
+  const [adjusting, setAdjusting] = useState<string | null>(null);
   const today = todayISO();
   const [name, setName] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
@@ -70,19 +73,22 @@ export function Classes() {
   const status = (c: ClassGroup): { tone: 'good' | 'info' | 'warn' | 'neutral'; text: string } => {
     const list = byClass(c.id);
     if (c.status === 'archived') return { tone: 'neutral', text: 'Archived' };
-    if (list.length && list.every((m) => m.day > 10)) return { tone: 'warn', text: 'Ready to archive' };
-    if (list.some((m) => m.day >= 10)) return { tone: 'info', text: 'Finishing' };
+    if (list.length && list.every((m) => m.position > m.programLength)) return { tone: 'warn', text: 'Ready to archive' };
+    if (list.some((m) => m.position >= m.programLength)) return { tone: 'info', text: 'Finishing' };
     return { tone: 'good', text: 'Active' };
   };
 
   const card = (c: ClassGroup) => {
     const list = byClass(c.id);
     const st = status(c);
-    const last = list.length ? list.map((m) => dateOfProgramDay(m.student.enrollment!.startDate, 10, new Set(settings.closedDays))).sort().pop() : null;
+    const plan = plans[c.id] ?? defaultPlan();
+    const custom = !isDefaultPlan(plan);
+    const length = programLength(plan);
+    const last = list.length ? list.map((m) => dateOfProgramDay(m.student.enrollment!.startDate, length, new Set(settings.closedDays))).sort().pop() : null;
     return (
       <Card key={c.id} className="" >
-        <div className="row row-between"><div className="row"><h2 className="card-title">{c.name}</h2><Tag tone={st.tone}>{st.text}</Tag></div>
-          {last && <span className="muted" style={{ fontSize: 13.5 }}>Last student reaches Day 10 on {new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(`${last}T12:00:00`))}</span>}</div>
+        <div className="row row-between"><div className="row"><h2 className="card-title">{c.name}</h2><Tag tone={st.tone}>{st.text}</Tag>{custom && <Tag tone="info">Custom days</Tag>}</div>
+          {last && <span className="muted" style={{ fontSize: 13.5 }}>{custom ? `Last student finishes (${length} days) on` : 'Last student reaches Day 10 on'} {new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(`${last}T12:00:00`))}</span>}</div>
         <div className="row" style={{ gap: 6, margin: '12px 0' }}>
           {list.length === 0 && <span className="muted" style={{ fontSize: 14 }}>No students yet.</span>}
           {list.map((m) => (
@@ -94,11 +100,17 @@ export function Classes() {
         </div>
         <div className="row">
           {c.status === 'active' && <Button className="btn-sm" onClick={() => setSelected(c.id)}>Add students</Button>}
+          {c.status === 'active' && <Button className="btn-sm" aria-expanded={adjusting === c.id} onClick={() => setAdjusting(adjusting === c.id ? null : c.id)}>Adjust days</Button>}
           <Button className="btn-sm" onClick={() => exportClass(c)} disabled={!list.length}>Export</Button>
           {c.status === 'active' && <Button className="btn-sm" variant={st.tone === 'warn' ? 'danger' : 'secondary'} onClick={() => { setPending({ kind: 'archive', cls: c }); setTyped(''); }}>{st.tone === 'warn' ? 'Export and archive' : 'Archive'}</Button>}
           {c.status === 'archived' && <Button className="btn-sm" onClick={() => void run(() => api.restoreClass(c.id), `Restored “${c.name}”.`)}>Restore</Button>}
           {c.status === 'archived' && <Button className="btn-sm" variant="danger" onClick={() => { setPending({ kind: 'delete', cls: c }); setTyped(''); }}>Delete permanently</Button>}
         </div>
+        {adjusting === c.id && c.status === 'active' && (
+          <PlanEditor key={`${c.id}:${plan.days.join(',')}`} className={c.name} saved={plan} busy={busy} onClose={() => setAdjusting(null)}
+            onSave={(next) => void run(async () => { await api.setClassPlan(c.id, next); setAdjusting(null); },
+              isDefaultPlan(next) ? `Reset ${c.name} to Day 1 through Day 10.` : `Saved the day plan for ${c.name}.`)} />
+        )}
       </Card>
     );
   };

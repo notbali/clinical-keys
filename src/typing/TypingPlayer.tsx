@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { accuracy, applyInput, elapsed, finishRun, newRun, wpm, type RunResult, type RunState } from './engine';
 import { Button, mmss } from '../components/ui';
+import { browserStore, clearRun, loadRun, pauseRun, pruneRuns, restoreRunState, saveRun } from '../lib/resume';
 
 interface Props {
   /** The exact text to type. */
@@ -13,11 +14,13 @@ interface Props {
   onRestart: () => void;
   /** Hint shown under the text box. */
   hint?: string;
+  /** Where to save the run so it can be resumed after a sleep or a closed tab. Leave out for runs that cannot resume. */
+  resumeKey?: string | null;
 }
 
 const TICK_MS = 100;
 
-export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint }: Props) {
+export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint, resumeKey }: Props) {
   const taRef = useRef<HTMLTextAreaElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const run = useRef<RunState>(newRun());
@@ -28,8 +31,15 @@ export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint }:
   const [peeking, setPeeking] = useState(false);
   const [message, setMessage] = useState('');
   const rerender = useCallback(() => bump((n) => n + 1), []);
+  // Only untimed runs resume: a timed sprint is all about its clock.
+  const canResume = !!resumeKey && !limit;
 
-  // New passage: start from scratch.
+  const persist = useCallback(() => {
+    if (!canResume || !resumeKey || finished.current) return;
+    saveRun(browserStore(), resumeKey, run.current, flags.current, target, performance.now(), Date.now());
+  }, [canResume, resumeKey, target]);
+
+  // New passage: start from scratch, or pick up where the student left off.
   useEffect(() => {
     run.current = newRun();
     finished.current = null;
@@ -37,9 +47,20 @@ export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint }:
     setPeeking(false);
     setMessage('');
     if (taRef.current) taRef.current.value = '';
+    if (canResume && resumeKey) {
+      const store = browserStore();
+      pruneRuns(store, Date.now());
+      const saved = loadRun(store, resumeKey, target, Date.now());
+      if (saved && saved.typed.length < target.length) {
+        run.current = restoreRunState(saved, performance.now());
+        flags.current = { revealed: saved.revealed, peeks: saved.peeks };
+        if (taRef.current) taRef.current.value = saved.typed;
+        setMessage('Welcome back. Your progress was restored.');
+      } else if (saved) clearRun(store, resumeKey);
+    }
     rerender();
     taRef.current?.focus({ preventScroll: true });
-  }, [target, rerender]);
+  }, [target, rerender]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const finish = useCallback(() => {
     if (finished.current) return;
@@ -48,10 +69,11 @@ export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint }:
     if (limit && s.start != null) end = Math.min(end, s.start + limit * 1000);
     const result = finishRun(s, target, end, { limit, revealed: flags.current.revealed, peeks: flags.current.peeks });
     finished.current = result;
+    if (resumeKey) clearRun(browserStore(), resumeKey);
     taRef.current?.blur();
     rerender();
     onFinish(result);
-  }, [limit, target, onFinish, rerender]);
+  }, [limit, target, onFinish, rerender, resumeKey]);
 
   // Clock: re-render while running and end a timed run when the time is up.
   const started = run.current.start != null && !finished.current;
@@ -63,6 +85,20 @@ export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint }:
     }, TICK_MS);
     return () => clearInterval(id);
   }, [started, limit, finish, rerender]);
+
+  // Away time must not count against speed: pause the clock while the tab is hidden, and save when leaving.
+  useEffect(() => {
+    if (!canResume) return;
+    let hiddenAt: number | null = null;
+    const onVis = () => {
+      if (document.visibilityState === 'hidden') { hiddenAt = performance.now(); persist(); return; }
+      if (hiddenAt != null && !finished.current) { run.current = pauseRun(run.current, performance.now() - hiddenAt); rerender(); }
+      hiddenAt = null;
+    };
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('pagehide', persist);
+    return () => { document.removeEventListener('visibilitychange', onVis); window.removeEventListener('pagehide', persist); };
+  }, [canResume, persist, rerender]);
 
   // Sprint text is a 3-line window that follows the cursor.
   useEffect(() => {
@@ -83,18 +119,25 @@ export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint }:
     run.current = applyInput(run.current, target, ta.value, performance.now());
     if (ta.value !== run.current.typed) ta.value = run.current.typed;
     rerender();
+    persist();
     if (run.current.typed.length === target.length) finish();
   };
 
+  const restart = () => {
+    if (resumeKey) clearRun(browserStore(), resumeKey);
+    onRestart();
+  };
+
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Tab') { e.preventDefault(); return; }
-    if (e.key === 'Escape') { e.preventDefault(); onRestart(); return; }
+    // Tab is left alone so keyboard users can reach Restart and the other buttons (no keyboard trap).
+    if (e.key === 'Escape') { e.preventDefault(); restart(); return; }
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) e.preventDefault();
   };
 
   const peek = () => {
     if (finished.current || peeking) return;
     flags.current.peeks++;
+    persist();
     setPeeking(true);
     setTimeout(() => setPeeking(false), 3000);
     taRef.current?.focus();
@@ -102,6 +145,7 @@ export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint }:
   const reveal = () => {
     if (finished.current) return;
     flags.current.revealed = true;
+    persist();
     rerender();
     taRef.current?.focus();
   };
@@ -160,11 +204,11 @@ export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint }:
           onPaste={(e) => { e.preventDefault(); setMessage('Pasting is off. Type it out!'); }}
           onDrop={(e) => e.preventDefault()}
         />
-        <div className="type-overlay">Click here and start typing</div>
+        <div className="type-overlay">{s.keys > 0 ? 'Click here (or press Shift+Tab) to keep typing' : 'Click here and start typing'}</div>
       </div>
 
       <div className="row">
-        <Button onClick={onRestart}>Restart</Button>
+        <Button onClick={restart}>Restart</Button>
         {mode === 'hidden' && (
           <>
             <Button onClick={peek} disabled={!!done || flags.current.revealed}>Peek (3 sec)</Button>
@@ -172,7 +216,7 @@ export function TypingPlayer({ target, mode, limit, onFinish, onRestart, hint }:
           </>
         )}
         <span className="tone-bad" style={{ fontWeight: 600, fontSize: 14 }} role="status">{message}</span>
-        <span className="hint" style={{ marginLeft: 'auto' }}>{hint ?? 'Enter = new line (↵) · Esc restarts · Pasting is off'}</span>
+        <span className="hint" style={{ marginLeft: 'auto' }}>{hint ?? 'Enter = new line (↵) · Esc restarts · Tab leaves the box · Pasting is off'}</span>
       </div>
     </div>
   );

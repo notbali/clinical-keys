@@ -23,9 +23,12 @@ describe('the generated drill registry', () => {
   it('offers both tracks several endless drills, with the modes the typing player supports', () => {
     expect(generatedDrillsForTrack('ma').length).toBeGreaterThanOrEqual(3);
     expect(generatedDrillsForTrack('rx').length).toBeGreaterThanOrEqual(3);
-    for (const d of GENERATED_DRILLS) { expect(['copy', 'hidden']).toContain(d.mode); expect(d.track, d.id).toBe(d.id.slice(0, 2)); }
+    for (const d of GENERATED_DRILLS) { expect(['copy', 'hidden', 'hunt']).toContain(d.mode); expect(d.track, d.id).toBe(d.id.slice(0, 2)); }
     expect(generatedDrillsForTrack('rx').find((d) => d.id === 'rx-gen-sig')).toMatchObject({ mode: 'hidden', glossary: true });
     expect(generatedDrillsForTrack('ma').every((d) => d.track === 'ma')).toBe(true);
+    // Only the PT sig drill shows the sig cheat sheet; every hunt has a flawed note to edit.
+    expect(GENERATED_DRILLS.filter((d) => d.glossary).map((d) => d.id)).toEqual(['rx-gen-sig']);
+    for (const d of GENERATED_DRILLS.filter((x) => x.mode === 'hunt')) expect(generatePassage(d, 1, TODAY).errors?.length, d.id).toBeGreaterThanOrEqual(3);
   });
 
   it('is kept apart from the written drills, whose progress and grades are keyed by id and passage', () => {
@@ -144,8 +147,10 @@ describe('every generated passage, from every drill', () => {
       const [last, first] = pt.name.split(', ');
       for (const m of p.text.matchAll(/\b([A-Z][a-z]+) ([A-Z][a-z]+)\b(?= \(DOB| called| reports)/g)) expect(`${m[1]} ${m[2]}`, where).toBe(`${first} ${last}`);
       const allergies = pt.allergies.toLowerCase();
+      // The allergy line itself may name the allergen ("Allergies: Sulfa drugs (hives)"); no drug anywhere else may be one the patient is allergic to.
+      const withoutAllergyList = p.text.toLowerCase().replace(`allergies: ${allergies}.`, '');
       if (allergies !== 'nkda') for (const [key, drugs] of Object.entries(ALLERGY_DRUGS)) {
-        if (allergies.includes(key)) for (const drug of drugs) expect(p.text.toLowerCase(), `${where}: allergy ${key}`).not.toContain(drug);
+        if (allergies.includes(key)) for (const drug of drugs) expect(withoutAllergyList, `${where}: allergy ${key}`).not.toContain(drug);
       }
     }
     expect(banners).toBeGreaterThan(1000);
