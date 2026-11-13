@@ -6,7 +6,7 @@ export const PROGRAM: Record<Track, ProgramDay[]> = {
     { n:1, title:"Medical terms", blurb:"Get your fingers warm and meet the long words you'll type all day.", acts:[
       {type:"sprint"},
       {type:"drill", id:"ma-terms"},
-      {type:"test", label:"Day 1 baseline typing test", soon:true} ]},
+      {type:"test", id:"ma-test", label:"Day 1 baseline typing test"} ]},
     { n:2, title:"Vitals", blurb:"Numbers, slashes, and units: build your number-row speed.", acts:[
       {type:"sprint"},
       {type:"drill", id:"ma-vitals"} ]},
@@ -18,7 +18,7 @@ export const PROGRAM: Record<Track, ProgramDay[]> = {
       {type:"drill", id:"ma-soap", label:"SOAP notes I"} ]},
     { n:5, title:"Mid-point check", blurb:"Halfway. See how far you've come since Day 1.", acts:[
       {type:"sprint"},
-      {type:"test", label:"Day 5 mid-point typing test", soon:true} ]},
+      {type:"test", id:"ma-test", label:"Day 5 mid-point typing test"} ]},
     { n:6, title:"Phone messages & refills", blurb:"Messages for the provider: names, dates, doses, callback details.", acts:[
       {type:"sprint"},
       {type:"drill", id:"ma-phone", label:"Phone messages & refills", passages:[0,2]} ]},
@@ -33,13 +33,13 @@ export const PROGRAM: Record<Track, ProgramDay[]> = {
       {type:"drill", id:"ma-edu"} ]},
     { n:10, title:"Final test", blurb:"Show what 10 days of practice did. Compare against Day 1.", acts:[
       {type:"sprint"},
-      {type:"test", label:"Day 10 final typing test", soon:true} ]}
+      {type:"test", id:"ma-test", label:"Day 10 final typing test"} ]}
   ],
   rx: [
     { n:1, title:"Pharmacy terms", blurb:"Get your fingers warm and meet the vocabulary of the pharmacy.", acts:[
       {type:"sprint"},
       {type:"drill", id:"rx-terms", label:"Pharmacy terms"},
-      {type:"test", label:"Day 1 baseline typing test", soon:true} ]},
+      {type:"test", id:"rx-test", label:"Day 1 baseline typing test"} ]},
     { n:2, title:"Sig codes: frequencies", blurb:"Daily, BID, TID, every 6 hours: turn shorthand into label directions.", acts:[
       {type:"sprint"},
       {type:"drill", id:"rx-sig", label:"Sig codes: frequencies", passages:[0,1,2,3,4,5,6]} ]},
@@ -51,7 +51,7 @@ export const PROGRAM: Record<Track, ProgramDay[]> = {
       {type:"drill", id:"rx-lasa"} ]},
     { n:5, title:"Mid-point check", blurb:"Halfway. See how far you've come since Day 1.", acts:[
       {type:"sprint"},
-      {type:"test", label:"Day 5 mid-point typing test", soon:true} ]},
+      {type:"test", id:"rx-test", label:"Day 5 mid-point typing test"} ]},
     { n:6, title:"Full prescription labels", blurb:"Multi-line labels: patient, drug, quantity, directions, refills.", acts:[
       {type:"sprint"},
       {type:"drill", id:"rx-labels"} ]},
@@ -66,6 +66,6 @@ export const PROGRAM: Record<Track, ProgramDay[]> = {
       {type:"drill", id:"rx-workflow", label:"Workflow & referrals", passages:[2,3]} ]},
     { n:10, title:"Final test", blurb:"Show what 10 days of practice did. Compare against Day 1.", acts:[
       {type:"sprint"},
-      {type:"test", label:"Day 10 final typing test", soon:true} ]}
+      {type:"test", id:"rx-test", label:"Day 10 final typing test"} ]}
   ]
 };

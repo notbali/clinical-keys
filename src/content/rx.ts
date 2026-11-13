@@ -117,5 +117,12 @@ export const rxDrills: Drill[] = [
     {ctx:"A drug is out of stock.", text:"Out of stock: amoxicillin 500 mg capsules. Order placed with the wholesaler on 11/12/2026, expected tomorrow by noon. Patient offered a partial fill and chose to wait."},
     {ctx:"A new insurance card. The member ID must match the card exactly.", text:"Insurance updated: Blue Pine Health, member ID QRT7718302, group GRP7731. Claim resubmitted and paid. Copay $10.00."},
     {ctx:"Handing a prescription to the patient. Two identifiers every time.", text:"Pickup: Verified two identifiers (name and date of birth) before handing over the prescription. Counseling offered; patient accepted. Pharmacist spoke with the patient. Signature captured."}
+  ]},
+{ id:"rx-test", track:"rx", mode:"copy", exam:true, title:"Typing Test",
+  blurb:"The program typing test. The same two passages on Day 1, Day 5 and Day 10, so you can see your own growth.",
+  why:"<b>Why it matters:</b> This test is the same every time on purpose. Your Day 1 result is your starting point, and Day 5 and Day 10 show how far accuracy and speed have come.",
+  items:[
+    {ctx:"<b>Typing test, part 1 of 2.</b> Two labels for one patient. Press <b>Enter</b> at each line break. Take your time: accuracy comes first.", text:"Rx# 4473021 Mitchell, Dana\nCyclobenzaprine 10 mg tablet Qty: 30\nTake 1 tablet by mouth three times daily as needed for muscle spasm.\nMay cause drowsiness. Alcohol may intensify this effect.\nRefills: 1 Dr. L. Nguyen\nRx# 4473048 Mitchell, Dana\nAmoxicillin 500 mg capsule Qty: 21\nTake 1 capsule by mouth three times daily for 7 days.\nFinish all of this medication unless otherwise directed by prescriber.\nRefills: 0 Dr. L. Nguyen"},
+    {ctx:"<b>Typing test, part 2 of 2.</b> A pharmacy note with a claim code, a date and Tall Man names. Check every letter and digit.", text:"Claim rejected: Refill too soon (code 79). Next eligible fill date 12/01/2026. Pharmacist consult needed: verify hydrALAZINE 25 mg, not hydrOXYzine 25 mg, before the sale. Lot number and expiration date checked. Insurance updated: Blue Pine Health, member ID QRT7718302. Copay $10.00. Patient told to pick up after 4:30 p.m."}
   ]}
 ];

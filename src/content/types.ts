@@ -29,6 +29,8 @@ export interface Drill {
   /** Trusted HTML explaining why the skill matters. */
   why: string;
   glossary?: boolean;
+  /** A program typing test. Shown only through the program, never in the practice library. */
+  exam?: boolean;
   items: Passage[];
 }
 

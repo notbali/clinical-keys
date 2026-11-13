@@ -28,7 +28,7 @@ describe('gradesCsv', () => {
     expect(row[7]).toBe('No');
     expect(row[8]).toBe('97');
     expect(row[9]).toBe('29');
-    expect(row.slice(10, 12)).toEqual(['6', '8']);
+    expect(row.slice(10, 12)).toEqual(['6', '9']);
     expect(row[12]).toBe(at('2026-11-12', 13, 5));
   });
   it('leaves grade, accuracy, speed and last active blank for a student with no runs, and shows the track name', () => {

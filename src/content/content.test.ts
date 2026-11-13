@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DRILLS, GLOSSARY, PROGRAM, SPRINT, getDrill } from './index';
+import { DRILLS, GLOSSARY, PROGRAM, SPRINT, getDrill, libraryDrills } from './index';
 import { SPRINT_LINES } from './sprint';
 import type { Drill, Track } from './types';
 
@@ -26,6 +26,8 @@ const NEW_DRILLS: Record<string, { track: Track; min: number }> = {
   'rx-lasa-2': { track: 'rx', min: 5 },
   'rx-daysupply': { track: 'rx', min: 6 },
   'rx-calls': { track: 'rx', min: 5 },
+  'ma-test': { track: 'ma', min: 2 },
+  'rx-test': { track: 'rx', min: 2 },
 };
 
 const newDrills = (): Drill[] => Object.keys(NEW_DRILLS).map((id) => getDrill(id)!);
@@ -39,34 +41,34 @@ describe('existing content is untouched (progress is keyed by drill id, passage 
   it('keeps the program structure: same activities per day, in the same order', () => {
     const shape = (t: Track) => PROGRAM[t].map((d) => d.acts.map((a) => `${a.type}:${a.id ?? '-'}${a.soon ? ':soon' : ''}:${(a.passages ?? ['all']).join(',')}`));
     expect(shape('ma')).toEqual([
-      ['sprint:-:all', 'drill:ma-terms:all', 'test:-:soon:all'],
+      ['sprint:-:all', 'drill:ma-terms:all', 'test:ma-test:all'],
       ['sprint:-:all', 'drill:ma-vitals:all'],
       ['sprint:-:all', 'drill:ma-complaints:all'],
       ['sprint:-:all', 'drill:ma-soap:all'],
-      ['sprint:-:all', 'test:-:soon:all'],
+      ['sprint:-:all', 'test:ma-test:all'],
       ['sprint:-:all', 'drill:ma-phone:0,2'],
       ['sprint:-:all', 'drill:ma-phone:1'],
       ['sprint:-:all', 'drill:ma-soap:all'],
       ['sprint:-:all', 'drill:ma-edu:all'],
-      ['sprint:-:all', 'test:-:soon:all'],
+      ['sprint:-:all', 'test:ma-test:all'],
     ]);
     expect(shape('rx')).toEqual([
-      ['sprint:-:all', 'drill:rx-terms:all', 'test:-:soon:all'],
+      ['sprint:-:all', 'drill:rx-terms:all', 'test:rx-test:all'],
       ['sprint:-:all', 'drill:rx-sig:0,1,2,3,4,5,6'],
       ['sprint:-:all', 'drill:rx-sig:7,8,9,10,11,12,13'],
       ['sprint:-:all', 'drill:rx-lasa:all'],
-      ['sprint:-:all', 'test:-:soon:all'],
+      ['sprint:-:all', 'test:rx-test:all'],
       ['sprint:-:all', 'drill:rx-labels:all'],
       ['sprint:-:all', 'drill:rx-safety:all'],
       ['sprint:-:all', 'drill:rx-workflow:0,1'],
       ['sprint:-:all', 'drill:rx-workflow:2,3'],
-      ['sprint:-:all', 'test:-:soon:all'],
+      ['sprint:-:all', 'test:rx-test:all'],
     ]);
   });
 
-  it('fills only the two "coming soon" drill slots with new drills, so no activity position moves', () => {
+  it('fills only former "coming soon" slots with new drills, so no activity position moves', () => {
     const used = Object.values(PROGRAM).flat().flatMap((d) => d.acts.map((a) => a.id)).filter((id): id is string => !!id && id in NEW_DRILLS);
-    expect(used.sort()).toEqual(['ma-complaints', 'rx-terms']);
+    expect(used.sort()).toEqual(['ma-complaints', 'ma-test', 'ma-test', 'ma-test', 'rx-terms', 'rx-test', 'rx-test', 'rx-test']);
     expect(PROGRAM.ma[2].acts[1]).toMatchObject({ type: 'drill', id: 'ma-complaints' });
     expect(PROGRAM.ma[2].acts[1].soon).toBeFalsy();
     expect(PROGRAM.rx[0].acts[1]).toMatchObject({ type: 'drill', id: 'rx-terms' });
@@ -303,6 +305,52 @@ describe('warm-up sprint lines', () => {
       const text = SPRINT.build(t);
       expect(text.length).toBeGreaterThan(500);
       expect(text).toMatch(/^[\x20-\x7E]+$/);
+    }
+  });
+});
+
+describe('typing tests (Day 1 baseline, Day 5 mid-point, Day 10 final)', () => {
+  const TESTS: [Track, string][] = [['ma', 'ma-test'], ['rx', 'rx-test']];
+  const LABELS = [[0, 2, 'Day 1 baseline typing test'], [4, 1, 'Day 5 mid-point typing test'], [9, 1, 'Day 10 final typing test']] as const;
+
+  it('replace all three "coming soon" tests on each track, with the original labels', () => {
+    for (const [track, id] of TESTS) for (const [dayIndex, actIndex, label] of LABELS) {
+      const act = PROGRAM[track][dayIndex].acts[actIndex];
+      expect(act, `${track} day ${dayIndex + 1}`).toMatchObject({ type: 'test', id, label });
+      expect(act.soon, `${track} day ${dayIndex + 1}`).toBeFalsy();
+    }
+  });
+
+  it('give the same passages on all three days, so Day 10 compares like for like with Day 1', () => {
+    for (const [track, id] of TESTS) {
+      const acts = LABELS.map(([d, a]) => PROGRAM[track][d].acts[a]);
+      for (const a of acts) expect(a.passages, `${track}`).toBeUndefined(); // every passage, same on each day
+      expect(getDrill(id)!.items.length, id).toBe(2);
+    }
+  });
+
+  it('are flagged as exams and kept out of the practice library, so nobody rehearses the baseline text', () => {
+    for (const [track, id] of TESTS) {
+      expect(getDrill(id)!.exam, id).toBe(true);
+      const ids = libraryDrills(track).map((d) => d.id);
+      expect(ids, `${track} library`).not.toContain(id);
+      expect(ids.length, `${track} library`).toBeGreaterThanOrEqual(10);
+    }
+    expect(DRILLS.filter((d) => d.exam).map((d) => d.id).sort()).toEqual(['ma-test', 'rx-test']);
+    for (const d of DRILLS.filter((d) => !d.exam)) expect(libraryDrills(d.track).map((x) => x.id), d.id).toContain(d.id);
+  });
+
+  it('are long enough to measure speed (a few minutes) and mix words with numbers', () => {
+    for (const [, id] of TESTS) {
+      const d = getDrill(id)!;
+      expect(d.mode).toBe('copy');
+      d.items.forEach((p, i) => {
+        expect(p.text.length, `${id} #${i}`).toBeGreaterThanOrEqual(300);
+        expect(p.text.length, `${id} #${i}`).toBeLessThanOrEqual(700);
+        expect(p.ctx, `${id} #${i}`).toMatch(/Typing test, part \d of 2/);
+      });
+      expect(d.items.map((p) => p.text).join(' '), id).toMatch(/\d/);
+      expect(d.items.some((p) => p.text.includes('\n')), `${id} has a multi-line part`).toBe(true);
     }
   });
 });
